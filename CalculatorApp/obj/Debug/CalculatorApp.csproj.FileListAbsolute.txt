@@ -1,0 +1,14 @@
+F:\3DTP\Mini Project\CalculatorApp\CalculatorApp\obj\Debug\CalculatorApp.csprojResolveAssemblyReference.cache
+F:\3DTP\Mini Project\CalculatorApp\CalculatorApp\obj\Debug\CalculatorApp.Properties.Resources.resources
+F:\3DTP\Mini Project\CalculatorApp\CalculatorApp\obj\Debug\CalculatorApp.csproj.GenerateResource.cache
+F:\3DTP\Mini Project\CalculatorApp\CalculatorApp\obj\Debug\CalculatorApp.csproj.CoreCompileInputs.cache
+E:\3DTP\Mini Project\CalculatorApp\CalculatorApp\bin\Debug\CalculatorApp.exe.config
+E:\3DTP\Mini Project\CalculatorApp\CalculatorApp\bin\Debug\CalculatorApp.exe
+E:\3DTP\Mini Project\CalculatorApp\CalculatorApp\bin\Debug\CalculatorApp.pdb
+E:\3DTP\Mini Project\CalculatorApp\CalculatorApp\obj\Debug\CalculatorApp.csprojAssemblyReference.cache
+E:\3DTP\Mini Project\CalculatorApp\CalculatorApp\obj\Debug\CalculatorApp.Properties.Resources.resources
+E:\3DTP\Mini Project\CalculatorApp\CalculatorApp\obj\Debug\CalculatorApp.csproj.GenerateResource.cache
+E:\3DTP\Mini Project\CalculatorApp\CalculatorApp\obj\Debug\CalculatorApp.csproj.CoreCompileInputs.cache
+E:\3DTP\Mini Project\CalculatorApp\CalculatorApp\obj\Debug\CalculatorApp.exe
+E:\3DTP\Mini Project\CalculatorApp\CalculatorApp\obj\Debug\CalculatorApp.pdb
+E:\3DTP\Mini Project\CalculatorApp\CalculatorApp\obj\Debug\CalculatorApp.CalculatorGUI.resources
