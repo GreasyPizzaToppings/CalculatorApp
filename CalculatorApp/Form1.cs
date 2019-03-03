@@ -1,17 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace CalculatorApp
 {
     public partial class CalculatorGUI : Form
     {
+        List<Button> buttonList = new List<Button>(); //make list for operator buttons
+        Label postCalculatedExpression, mainDisplay, preCalculatedExpression; //declare screen labels
+        Calculator calculator = new Calculator(); //the calculation class object
+        bool finishedCalculation = false;
+
+
         public CalculatorGUI()
         {
             InitializeComponent();
@@ -20,83 +21,110 @@ namespace CalculatorApp
             InitialiseCalculatorButtons();
             ChangeButtonColours();
 
-            //make the input/output textboxes and labels
-            //InitialiseCalculatorDisplays();
-            DrawDisplayBorder();
+            //make the input/output labels
+            InitialiseCalculatorDisplays();
+            
         }
 
-        List<Button> buttonList = new List<Button>(); //make list for operator buttons
+        #region GUI Events
 
-        Label postCalculatedExpression, mainDisplay, preCalculatedResult; //declare screen labels
+        private void CalculatorGUI_Resize(object sender, EventArgs e)
+        {
+            //Fixed values for the size of the calculator. Stops resizing, apart from fullscreen.
+            ActiveForm.Width = 325;
+            ActiveForm.Height = 560;
+        }
+
+        private void CalculatorGUI_Paint(object sender, PaintEventArgs e) //Draws the border around the displays
+        {
+            Graphics drawArea = e.Graphics;
+            Pen borderPen = new Pen(Color.Black, 3);
+
+            Rectangle borderRectangle = new Rectangle(3, 5, 301, 130);
+            drawArea.DrawRectangle(borderPen, borderRectangle);
+
+            //draw the line separating the main label from the postcalculation label
+            drawArea.DrawLine(borderPen, new Point(3, 40), new Point(303, 40));
+        }
+
+        private void MainDisplay_TextChanged(object sender, EventArgs e)
+        {
+            //set maximum character input limit one entire screen's worth of digits, which is about 60 long.
+            int maxLength = 60;
+
+            if (mainDisplay.Text.Length >= maxLength)
+            {
+                mainDisplay.Text = mainDisplay.Text.Remove(maxLength - 1, 1) + "";
+            }
+        }
+
+        #endregion
+
 
         public void InitialiseCalculatorDisplays()
         {
-            
-            int labelWidth = 295;
-            int labelHeight = 30;
+            //displays fit perfectly inside the border that is drawn
 
-            postCalculatedExpression = new Label();
-            postCalculatedExpression.Size = new Size(labelWidth, labelHeight);
-            postCalculatedExpression.BackColor = Color.DarkGray;
-            postCalculatedExpression.Location = new Point(5, 3);
-            postCalculatedExpression.Font = new Font("Arial", 12);
-            postCalculatedExpression.TextAlign = ContentAlignment.MiddleLeft;
-            //test text
-            postCalculatedExpression.Text = "24*3/2-1.003^3";
+            int labelWidth = 298;
+            int labelHeight = 32;
+
+            const int startingX = 5;
+            const int startingY = 7;
+            const int gap = 3;
+
+            Color textColor = Color.Black;
+            //make custom light green
+            Color displayColor = ColorTranslator.FromHtml("#b4eac7");
+
+            postCalculatedExpression = new Label
+            {
+                Size = new Size(labelWidth, labelHeight),
+                ForeColor = textColor,
+                BackColor = displayColor,
+                Location = new Point(startingX, startingY),
+                Font = new Font("Arial", 12),
+                TextAlign = ContentAlignment.MiddleLeft,
+            };
+
             Controls.Add(postCalculatedExpression);
 
-            mainDisplay = new Label();
-            mainDisplay.Size = new Size(labelWidth, labelHeight * 2);
-            mainDisplay.BackColor = Color.DarkGray;
-            mainDisplay.Location = new Point(5, 35);
-            mainDisplay.Font = new Font("Arial", 15);
-            mainDisplay.TextAlign = ContentAlignment.MiddleLeft;
+            mainDisplay = new Label
+            {
+                Size = new Size(labelWidth, Convert.ToInt16(labelHeight * 1.95)),
+                ForeColor = textColor,
+                BackColor = displayColor,
+                Location = new Point(startingX, startingY + labelHeight + gap),
+                Font = new Font("Arial", 15),
+                TextAlign = ContentAlignment.MiddleLeft
+                
+            };
+
+            mainDisplay.TextChanged += new EventHandler(MainDisplay_TextChanged);
             Controls.Add(mainDisplay);
 
-            preCalculatedResult = new Label();
-            preCalculatedResult.Size = new Size(labelWidth, labelHeight);
-            preCalculatedResult.BackColor = Color.DarkGray;
-            preCalculatedResult.Location = new Point(5, 97);
-            preCalculatedResult.Font = new Font("Arial", 12);
-            preCalculatedResult.TextAlign = ContentAlignment.MiddleLeft;
-            //test text
-            preCalculatedResult.Text = "552.1832";
-            Controls.Add(preCalculatedResult);
-        }
+            preCalculatedExpression = new Label
+            {
+                Size = new Size(labelWidth, labelHeight),
+                ForeColor = textColor,
+                BackColor = displayColor,
+                Location = new Point(startingX, startingY + Convert.ToInt16(labelHeight * 2.86) + gap),
+                Font = new Font("Arial", 12),
+                TextAlign = ContentAlignment.MiddleLeft,
+            };
 
-        public void DrawDisplayBorder()
-        {
-            //make picturebox for draw area
-            PictureBox displayArea = new PictureBox();
-            displayArea.Size = new Size(295, 124); //exactly as high as all 3 displays and the gap
-            displayArea.Location = new Point(5, 3);
-            displayArea.BackColor = Color.White;
-            Controls.Add(displayArea);
-
-            Graphics drawArea = displayArea.CreateGraphics();
-
-            //make border
-            Pen borderPen = new Pen(Color.Black);
-            borderPen.Width = 50;
-            Point xPoint = displayArea.Location;
-            
-            //y u no work?
-            drawArea.DrawLine(borderPen, new Point(xPoint.X, xPoint.Y), new Point(xPoint.X + 50, xPoint.Y + 50));
-
-            Rectangle borderRectangle = new Rectangle(5, 3, 295, 124);
-            drawArea.DrawRectangle(borderPen, borderRectangle);
+            Controls.Add(preCalculatedExpression);
         }
 
         public void InitialiseCalculatorButtons()
         {
-            EventHandler[] eventMethodNames = { BtnClear_Click, Btn0_Click, BtnDecimalPoint_Click, BtnEquals_Click, Btn1_Click, Btn2_Click, Btn3_Click, BtnPlus_Click, Btn4_Click, Btn5_Click, Btn6_Click, BtnMinus_Click, Btn7_Click, Btn8_Click, Btn9_Click, BtnMultiply_Click, BtnSquareRoot_Click, BtnMemoryClear_Click, BtnMemoryPlus_Click, BtnDivide_Click, BtnWedge_Click, BtnMemoryRecall_Click, BtnMemoryMinus_Click, BtnBackspace_Click };
+            EventHandler[] eventMethodNames = { BtnClear_Click, Btn0_Click, BtnDecimalPoint_Click, BtnEquals_Click, Btn1_Click, Btn2_Click, Btn3_Click, BtnPlus_Click, Btn4_Click, Btn5_Click, Btn6_Click, BtnMinus_Click, Btn7_Click, Btn8_Click, Btn9_Click, BtnMultiply_Click, BtnSquareRoot_Click, BtnMemoryClear_Click, BtnMemoryPlus_Click, BtnDivide_Click, BtnExponent_Click, BtnMemoryRecall_Click, BtnMemoryMinus_Click, BtnBackspace_Click };
             string[] buttonSymbols = { "AC", "0", ".", "=", "1", "2", "3", "+", "4", "5", "6", "-", "7", "8", "9", "×", "√", "MC", "M+", "÷", "^", "MR", "M-", "⌫" };
 
             //initialise button instance
             Button btnOperators = new Button();
 
-            int btnX = 2;
-            int btnY = 450;
+            int btnX = 3;
+            int btnY = 458;
             int btnHeight = 60; //One Unit = 30 pixels.
             int btnWidth = Convert.ToInt16(btnHeight * 1.25); //keeping with ratio in design
             
@@ -122,7 +150,7 @@ namespace CalculatorApp
                 //check for grid alignment
                 if (btnX >= (3 * btnWidth))
                 {
-                    btnX = 2; //reset and align grid upwards
+                    btnX = 3; //reset and align grid upwards
                     btnY -= (btnHeight + 2);
                 }
                 else
@@ -174,75 +202,164 @@ namespace CalculatorApp
 
         }
 
+        public void ClearDisplays()
+        {
+            //clear all 3 displays
+            postCalculatedExpression.Text = "";
+            mainDisplay.Text = "";
+            preCalculatedExpression.Text = "";
+        }
+
         #region Button Events
+
         //Click Events for each operator
         void BtnClear_Click(object sender, EventArgs e)
         {
-            mainDisplay.Text = "";
+            ClearDisplays();
         }
         void Btn0_Click(object sender, EventArgs e)
         {
+            if (finishedCalculation)
+            {
+                ClearDisplays();
+                finishedCalculation = false; //once you input stuff, you start a new calculation
+            }
             mainDisplay.Text += "0";
         }
         void BtnDecimalPoint_Click(object sender, EventArgs e)
         {
+            if (finishedCalculation)
+            {
+                ClearDisplays();
+                finishedCalculation = false; //once you input stuff, you start a new calculation
+            }
             mainDisplay.Text += ".";
         }
+
         void BtnEquals_Click(object sender, EventArgs e)
         {
-            mainDisplay.Text = "=";
+            finishedCalculation = false;
+
+            //send input to be processed and calculated
+            string expression = mainDisplay.Text;
+            calculator.Calculate(expression, postCalculatedExpression, mainDisplay, preCalculatedExpression);
+            finishedCalculation = true;
+
         }
+
         void Btn1_Click(object sender, EventArgs e)
         {
+            if (finishedCalculation)
+            {
+                ClearDisplays();
+                finishedCalculation = false; //once you input stuff, you start a new calculation
+            }
             mainDisplay.Text += "1";
+
+
         }
         void Btn2_Click(object sender, EventArgs e)
         {
+            if (finishedCalculation)
+            {
+                ClearDisplays();
+                finishedCalculation = false; //once you input stuff, you start a new calculation
+            }
             mainDisplay.Text += "2";
         }
         void Btn3_Click(object sender, EventArgs e)
         {
+            if (finishedCalculation)
+            {
+                ClearDisplays();
+                finishedCalculation = false; //once you input stuff, you start a new calculation
+            }
             mainDisplay.Text += "3";
         }
         void BtnPlus_Click(object sender, EventArgs e)
         {
+            if (finishedCalculation)
+            {
+                ClearDisplays();
+                finishedCalculation = false; //once you input stuff, you start a new calculation
+            }
             mainDisplay.Text += "+";
         }
         void Btn4_Click(object sender, EventArgs e)
         {
+            if (finishedCalculation)
+            {
+                ClearDisplays();
+                finishedCalculation = false; //once you input stuff, you start a new calculation
+            }
             mainDisplay.Text += "4";
         }
         void Btn5_Click(object sender, EventArgs e)
         {
+            if (finishedCalculation)
+            {
+                ClearDisplays();
+                finishedCalculation = false; //once you input stuff, you start a new calculation
+            }
             mainDisplay.Text += "5";
         }
         void Btn6_Click(object sender, EventArgs e)
         {
+            if (finishedCalculation)
+            {
+                ClearDisplays();
+                finishedCalculation = false; //once you input stuff, you start a new calculation
+            }
             mainDisplay.Text += "6";
         }
         void BtnMinus_Click(object sender, EventArgs e)
         {
+            if (finishedCalculation)
+            {
+                ClearDisplays();
+                finishedCalculation = false; //once you input stuff, you start a new calculation
+            }
             mainDisplay.Text += "-";
         }
         void Btn7_Click(object sender, EventArgs e)
         {
+            if (finishedCalculation)
+            {
+                ClearDisplays();
+                finishedCalculation = false; //once you input stuff, you start a new calculation
+            }
             mainDisplay.Text += "7";
         }
         void Btn8_Click(object sender, EventArgs e)
         {
+            if (finishedCalculation)
+            {
+                ClearDisplays();
+                finishedCalculation = false; //once you input stuff, you start a new calculation
+            }
             mainDisplay.Text += "8";
         }
         void Btn9_Click(object sender, EventArgs e)
         {
+            if (finishedCalculation)
+            {
+                ClearDisplays();
+                finishedCalculation = false; //once you input stuff, you start a new calculation
+            }
             mainDisplay.Text += "9";
         }
         void BtnMultiply_Click(object sender, EventArgs e)
         {
-            mainDisplay.Text += "*";
+            mainDisplay.Text += "×";
         }
         void BtnSquareRoot_Click(object sender, EventArgs e)
         {
-            mainDisplay.Text += "Square root";
+            if (finishedCalculation)
+            {
+                ClearDisplays();
+                finishedCalculation = false; //once you input stuff, you start a new calculation
+            }
+            mainDisplay.Text += "√";
         }
         void BtnMemoryClear_Click(object sender, EventArgs e)
         {
@@ -254,9 +371,9 @@ namespace CalculatorApp
         }
         void BtnDivide_Click(object sender, EventArgs e)
         {
-            mainDisplay.Text += "/";
+            mainDisplay.Text += "÷";
         }
-        void BtnWedge_Click(object sender, EventArgs e)
+        void BtnExponent_Click(object sender, EventArgs e)
         {
             mainDisplay.Text += "^";
         }
@@ -268,19 +385,22 @@ namespace CalculatorApp
         {
             mainDisplay.Text = "Memory Minus";
         }
+
         void BtnBackspace_Click(object sender, EventArgs e)
         {
-            //could do the backspace function here
-                    }
+            //delete the last character if there is input already
+            if (mainDisplay.Text.Length >= 1)
+            {
+                mainDisplay.Text = mainDisplay.Text.Remove((mainDisplay.Text.Length - 1), 1) + "";
+            }
+
+        }
+
         #endregion
     }
 }
 
-//Make the GUI from code. No manually placing it for some fucking reason
-//Make the Calculator or Calculating/Computing class and start working on operations
-//Make the backspace method here.
-//figure out how it is all going to work. I think it could split the whole expression up when you press equals
-//checking for errors and then segregating the operands and their operators into an array. Sort it by bedmas
-//rules and then call a method dealing with each one. 
-//perhaps the labels for the main display can be inputted into by typing
-//currently trying to get the border to draw around the display labels. It won't work for some reason...
+//features to incorporate once basic concepts are working:
+//1. BEDMAS on operations, and to not just execute sequentially.
+//2. Various colour schemes that can be selected.
+//3. Make typing an available input into the calculator. 

@@ -12,3 +12,9 @@ E:\3DTP\Mini Project\CalculatorApp\CalculatorApp\obj\Debug\CalculatorApp.csproj.
 E:\3DTP\Mini Project\CalculatorApp\CalculatorApp\obj\Debug\CalculatorApp.exe
 E:\3DTP\Mini Project\CalculatorApp\CalculatorApp\obj\Debug\CalculatorApp.pdb
 E:\3DTP\Mini Project\CalculatorApp\CalculatorApp\obj\Debug\CalculatorApp.CalculatorGUI.resources
+F:\3DTP\Mini Project\CalculatorApp\CalculatorApp\bin\Debug\CalculatorApp.exe.config
+F:\3DTP\Mini Project\CalculatorApp\CalculatorApp\bin\Debug\CalculatorApp.exe
+F:\3DTP\Mini Project\CalculatorApp\CalculatorApp\bin\Debug\CalculatorApp.pdb
+F:\3DTP\Mini Project\CalculatorApp\CalculatorApp\obj\Debug\CalculatorApp.CalculatorGUI.resources
+F:\3DTP\Mini Project\CalculatorApp\CalculatorApp\obj\Debug\CalculatorApp.exe
+F:\3DTP\Mini Project\CalculatorApp\CalculatorApp\obj\Debug\CalculatorApp.pdb
