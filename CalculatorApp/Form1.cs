@@ -7,8 +7,11 @@ namespace CalculatorApp
 {
     public partial class CalculatorGUI : Form
     {
+
         List<Button> buttonList = new List<Button>(); //make list for operator buttons
-        Label postCalculatedExpression, mainDisplay, preCalculatedExpression; //declare screen labels
+        public static Label postCalculatedExpression, mainDisplay, preCalculatedExpression; //declare screen labels
+
+
         Calculator calculator = new Calculator(); //the calculation class object
         bool finishedCalculation = false;
 
@@ -24,7 +27,10 @@ namespace CalculatorApp
             //make the input/output labels
             InitialiseCalculatorDisplays();
             
+             
         }
+
+
 
         #region GUI Events
 
@@ -114,6 +120,8 @@ namespace CalculatorApp
 
             Controls.Add(preCalculatedExpression);
         }
+
+        
 
         public void InitialiseCalculatorButtons()
         {
@@ -240,9 +248,10 @@ namespace CalculatorApp
         {
             finishedCalculation = false;
 
-            //send input to be processed and calculated
             string expression = mainDisplay.Text;
-            calculator.Calculate(expression, postCalculatedExpression, mainDisplay, preCalculatedExpression);
+
+            //send input to be processed and calculated
+            calculator.SetupCalculator(expression);
             finishedCalculation = true;
 
         }
@@ -400,7 +409,7 @@ namespace CalculatorApp
     }
 }
 
-//features to incorporate once basic concepts are working:
+//Potential features to incorporate once basic concepts are working:
 //1. BEDMAS on operations, and to not just execute sequentially.
 //2. Various colour schemes that can be selected.
 //3. Make typing an available input into the calculator. 
