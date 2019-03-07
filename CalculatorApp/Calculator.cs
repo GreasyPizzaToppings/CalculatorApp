@@ -26,7 +26,10 @@ namespace CalculatorApp
             //Obtain cleaned operators and numbers needed for calculation(s)
             string[] numbers = ObtainWorkingNumbers(expression);
             string[] operators = ObtainWorkingOperators(expression);
-            
+
+            Console.WriteLine("numbers to be used for calculation:");
+            foreach (string number in numbers) Console.WriteLine("number: " + number);
+
             //Once input has been properly processed/setup for calculation, begin calculating.
             string answer = ComputeExpression(numbers, operators);
 
@@ -38,43 +41,44 @@ namespace CalculatorApp
         {
             string answer = ""; //keep answer in terms of string for display purposes
 
-            #region Print Array Contents
+            //Calculate each chunk and return as number, and update number array
 
-            Console.WriteLine("Working numbers and operators include: ");
-
-            //For debugging/developing purposes. Remove in final version
-            foreach (string operatorSymbol in operators)
-            {
-                Console.WriteLine("Operator: " + operatorSymbol);
-            }
-
-            foreach (string number in numbers)
-            {
-                Console.WriteLine("Number: " + number);
-            }
-            #endregion
-
-
-            //-----step 1: Break expression into a workable chunk of the form Number, Operator, Number-----
-
-            //Create chunk and update arrays
             Chunk chunk = new Chunk();
-            chunk = chunk.GetChunk(numbers, operators);
 
-            numbers = numbers.Where(z => !string.IsNullOrWhiteSpace(z)).ToArray();
-            operators = operators.Where(x => !string.IsNullOrWhiteSpace(x)).ToArray();
-
-
-            Console.WriteLine("first chunk is: {0}, {1}, {2}", chunk.number1, chunk.calculatorOperator, chunk.number2);
-
-            //if no full chunks are made, the answer requires no computation, and is always the first element in numbers[]
-            if (chunk.IsFull() == false)
+            do
             {
-                answer = numbers[0]; 
-            }
+                //Create chunk and update arrays
+                chunk = chunk.GetChunk(numbers, operators);
 
-            //-----Step 2: Calculate each chunk and return as number, and update number array------
+                //remove blank spaces
+                numbers = numbers.Where(z => !string.IsNullOrWhiteSpace(z)).ToArray();
+                operators = operators.Where(x => !string.IsNullOrWhiteSpace(x)).ToArray();
 
+
+                //compute the chunk by calling the appropriate method
+                switch (chunk.calculatorOperator)
+                {
+                    case "+":
+                        chunk.number1 = Add(chunk.number1, chunk.number2);
+                        break;
+                    case "-":
+                        chunk.number1 = Subtract(chunk.number1, chunk.number2);
+                        break;
+                    case "÷":
+                        chunk.number1 = Divide(chunk.number1, chunk.number2);
+                        break;
+                    case "×":
+                        chunk.number1 = Multiply(chunk.number1, chunk.number2);
+                        break;
+                    case "^":
+                        chunk.number1 = Exponent(chunk.number1, chunk.number2);
+                        break;
+                }
+
+
+            } while (chunk.IsFull());
+        
+            answer = chunk.number1; //result is always the first number in the partially filled chunk
 
             return answer;
         }
@@ -218,13 +222,17 @@ namespace CalculatorApp
                 }
             }
 
-            //Getting working numbers involves simplifying them.
-            numbers = SimplifyNumbers(numbers);
+            //Remove unnecessary pluses or minuses at the front
+            numbers = SimplifyNumberSign(numbers);
+
+            //Remove the '√' sign from the number by evaluation to make them truly workable
+            numbers = EvaluateRoots(numbers);
 
             return numbers;
         }
 
-        private string[] SimplifyNumbers(string[] numberArray)
+        private string[] SimplifyNumberSign(string[] numberArray)
+
 
         {
             //obtaining the operator sequence
@@ -236,8 +244,6 @@ namespace CalculatorApp
                 string minusSequence = "";
                 string number = numberArray[numberIndex];
                 string baseNumber = "";
-
-                Console.WriteLine("starting number is: " + number);
 
                 foreach (Match match in numberParts.Matches(number))
                 {
@@ -261,15 +267,41 @@ namespace CalculatorApp
                 if (minusSequence.Length % 2 == 0) minusSequence = "";
                 else minusSequence = "-";
 
-                Console.WriteLine("detected minus sequence for the number is" + minusSequence);
-                //update number //minus sequence + base or root number
-                Console.WriteLine("Refined number is " + minusSequence + baseNumber);
-
+                //update number 
                 numberArray[numberIndex] = minusSequence + baseNumber;
             }
 
 
             return numberArray;
+        }
+
+        private string[] EvaluateRoots(string[] numberArray)
+        {
+            for (int numberIndex = 0; numberIndex <= numberArray.Length - 1; numberIndex++)
+            {
+                string number = numberArray[numberIndex];
+                if (number.Contains('√'))
+                {
+                    string decimalNumber = Convert.ToString(SquareRoot(number));
+                    numberArray[numberIndex] = decimalNumber;
+                }
+            }
+
+            return numberArray;
+        }
+
+        private string[] ObtainBaseOperators(string expression)
+        {
+            string[] operators = expression.Split('1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '.');
+
+            //remove first element, as it is part of the number
+            operators[0] = "";
+
+            //remove blank elements
+            operators = operators.Where(x => !string.IsNullOrWhiteSpace(x)).ToArray();
+
+
+            return operators;
         }
 
         private string[] ObtainWorkingOperators(string expression)
@@ -296,7 +328,6 @@ namespace CalculatorApp
                     //Extract real operator and update array
                     string realOperator = operatorSequence.ElementAt(0).ToString();
 
-                    Console.WriteLine("The refined operator is " + realOperator);
                     operators[operatorIndex] = realOperator;
                 }
             }
@@ -304,19 +335,6 @@ namespace CalculatorApp
             return operators;
         }
 
-        private string[] ObtainBaseOperators(string expression)
-        {
-            string[] operators = expression.Split('1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '.');
-
-            //remove first element, as it is part of the number
-            operators[0] = "";
-
-            //remove blank elements
-            operators = operators.Where(x => !string.IsNullOrWhiteSpace(x)).ToArray();
-
-
-            return operators;
-        }
 
 
         private void DisplayError(string reason)
@@ -339,34 +357,75 @@ namespace CalculatorApp
 
 
         #region Calculator Functions
-        private void Add()
+        private string Add(string firstNumber, string secondNumber)
         {
-
+            return "";
         }
-        private void Subtract()
+        private string Subtract(string firstNumber, string secondNumber)
         {
-
-        }
-
-        private void Multiply()
-        {
-
+            return "";
         }
 
-        private void Divide()
+        private string Multiply(string firstNumber, string secondNumber)
         {
-
+            return "";
         }
 
-        private void SquareRoot()
+        private string Divide(string numerator, string denominator)
         {
 
+
+
+            return "";
         }
 
-        private void Exponent()
+        private string Exponent(string baseNumber, string power)
         {
 
+            return "";
         }
+
+        private double SquareRoot(string number)
+        {
+            //Obtain number of roots in the number
+            Regex root = new Regex(@"[√]");
+            int rootCount = root.Matches(number).Count;
+
+            if (rootCount == 0) return 0.00;
+
+            bool isNegative = false;
+
+            string nonNegativeNumber = "";
+
+            if (number.Contains("-"))
+            {
+                isNegative = true;
+                //Then number to be rooted will be everything but the first two chars
+                nonNegativeNumber = number.Remove(0, 1) + "";
+            }
+            else
+            {
+                nonNegativeNumber = number;
+            }
+
+
+
+            double workingNumber = Convert.ToDouble(nonNegativeNumber.Remove(0, rootCount) + "");
+
+            while (rootCount >= 1)
+            {
+                //Calculate root value
+                workingNumber = Math.Sqrt(workingNumber);
+                rootCount--;
+            }
+
+            if (isNegative) workingNumber = workingNumber * -1; //Add negative back on.
+
+            double result = workingNumber;
+
+            return result;
+        }
+
 
         #endregion
     }
@@ -403,10 +462,15 @@ namespace CalculatorApp
                 chunk.calculatorOperator = operatorArray[n];
                 chunk.number2 = numberArray[n + 1];
 
-                //update arrays and remove empty elements
+                //update arrays
                 numberArray[n] = "";
                 numberArray[n + 1] = "";
                 operatorArray[n] = "";
+            }
+
+            else
+            {
+                chunk.number1 = numberArray[0];
             }
 
             return chunk;
@@ -415,14 +479,3 @@ namespace CalculatorApp
 
     }
 }
-
-//Steps for calculating that need to be implemented
-//while(chunks are full) {
-//Build chunks by using GetChunk()
-//Compute chunk by calling appropriate method, returning the result.
-//Update number array with computed value from previous chunk.
-//}
-//return final value when chunks are not full.
-
-
-
