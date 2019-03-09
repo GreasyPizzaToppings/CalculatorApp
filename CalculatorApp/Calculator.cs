@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Text.RegularExpressions;
-using System.Windows.Forms;
 
 namespace CalculatorApp
 {
@@ -14,8 +10,8 @@ namespace CalculatorApp
 
     class Calculator
     {
-
-        public void SetupCalculator(string expression)
+        //Start working with the given expression, and try and calculate with it
+        public void Start(string expression)
         {
             //Check for invalid inputs
             if (IsValid(expression) == false)
@@ -27,62 +23,133 @@ namespace CalculatorApp
             string[] numbers = ObtainWorkingNumbers(expression);
             string[] operators = ObtainWorkingOperators(expression);
 
-            Console.WriteLine("numbers to be used for calculation:");
-            foreach (string number in numbers) Console.WriteLine("number: " + number);
-
-            //Once input has been properly processed/setup for calculation, begin calculating.
+            //Begin calculating and display result
             string answer = ComputeExpression(numbers, operators);
-
-            //Display answer and input to user
             SetLabels(expression, answer);
         }
 
         private string ComputeExpression(string[] numbers, string[] operators)
         {
-            string answer = ""; //keep answer in terms of string for display purposes
-
-            //Calculate each chunk and return as number, and update number array
-
+            //Calculate expression by building 'chunks' of the form number, operator, number. 
             Chunk chunk = new Chunk();
 
             do
             {
-                //Create chunk and update arrays
+                //Make a chunk to compute. Non-full chunks mean only one number is left - the answer.
                 chunk = chunk.GetChunk(numbers, operators);
+                if (chunk.IsFull() == false) break;
 
-                //remove blank spaces
-                numbers = numbers.Where(z => !string.IsNullOrWhiteSpace(z)).ToArray();
-                operators = operators.Where(x => !string.IsNullOrWhiteSpace(x)).ToArray();
-
-
-                //compute the chunk by calling the appropriate method
+                //Evaluate by calling the appropriate method
                 switch (chunk.calculatorOperator)
                 {
                     case "+":
-                        chunk.number1 = Add(chunk.number1, chunk.number2);
+                        numbers[0] = Add(chunk.number1, chunk.number2);
                         break;
                     case "-":
-                        chunk.number1 = Subtract(chunk.number1, chunk.number2);
+                        numbers[0] = Subtract(chunk.number1, chunk.number2);
                         break;
                     case "÷":
-                        chunk.number1 = Divide(chunk.number1, chunk.number2);
+                        numbers[0] = Divide(chunk.number1, chunk.number2);
                         break;
                     case "×":
-                        chunk.number1 = Multiply(chunk.number1, chunk.number2);
+                        numbers[0] = Multiply(chunk.number1, chunk.number2);
                         break;
                     case "^":
-                        chunk.number1 = Exponent(chunk.number1, chunk.number2);
+                        numbers[0] = Exponent(chunk.number1, chunk.number2);
                         break;
                 }
 
+                //Remove empty entries in arrays
+                numbers = numbers.Where(z => !string.IsNullOrWhiteSpace(z)).ToArray();
+                operators = operators.Where(x => !string.IsNullOrWhiteSpace(x)).ToArray();
 
             } while (chunk.IsFull());
-        
-            answer = chunk.number1; //result is always the first number in the partially filled chunk
 
+            //result is always the first number in the partially filled chunk
+            string answer = chunk.number1;
+            
+            //Simplify any long answers for ease of display
+            answer = Exponent(answer, "1");
             return answer;
         }
 
+        #region Calculator Functions
+        private string Add(string firstNumber, string secondNumber)
+        {
+            double total = Convert.ToDouble(firstNumber) + Convert.ToDouble(secondNumber);
+            string textAnswer = total.ToString();
+            return textAnswer;
+        }
+        private string Subtract(string firstNumber, string secondNumber)
+        {
+            double total = Convert.ToDouble(firstNumber) - Convert.ToDouble(secondNumber);
+            string textAnswer = total.ToString();
+            return textAnswer;
+        }
+
+        private string Multiply(string firstNumber, string secondNumber)
+        {
+            double total = Convert.ToDouble(firstNumber) * Convert.ToDouble(secondNumber);
+            string textAnswer = total.ToString();
+            return textAnswer;
+        }
+
+        private string Divide(string numerator, string denominator)
+        {
+            double total = Convert.ToDouble(numerator) / Convert.ToDouble(denominator);
+            string textAnswer = total.ToString();
+            return textAnswer;
+        }
+
+        private string Exponent(string baseNumber, string power)
+        {
+            double workingBase = Convert.ToDouble(baseNumber);
+            double workingExponent = Convert.ToDouble(power);
+
+            double answer = Math.Pow(workingBase, workingExponent);
+
+            string textAnswer = answer.ToString();
+            return textAnswer;
+        }
+
+        private double SquareRoot(string number)
+        {
+            //Obtain number of roots in the number
+            Regex root = new Regex(@"[√]");
+            int rootCount = root.Matches(number).Count;
+            if (rootCount == 0) return 0.00;
+
+            bool isNegative = false;
+            string nonNegativeNumber = "";
+
+            if (number.Contains("-"))
+            {
+                isNegative = true;
+                //Then number to be rooted will be everything but the first two chars
+                nonNegativeNumber = number.Remove(0, 1) + "";
+            }
+            else
+            {
+                nonNegativeNumber = number;
+            }
+
+            double workingNumber = Convert.ToDouble(nonNegativeNumber.Remove(0, rootCount) + "");
+
+            while (rootCount >= 1)
+            {
+                //Calculate root value
+                workingNumber = Math.Sqrt(workingNumber);
+                rootCount--;
+            }
+
+            if (isNegative) workingNumber = workingNumber * -1; //Add negative back on.
+
+            double result = workingNumber;
+            return result;
+        }
+        #endregion
+
+        #region Routines To Obtain Workable Input 
         private bool IsValid(string expression)
         {
             //Error message not required for this invalid case
@@ -116,8 +183,8 @@ namespace CalculatorApp
                 return false;
             }
 
-            //Check for one of the 19 possible invalid 2-symbol combinations.
-            string[] invalidOperatorCombos = { "÷÷", "÷×", "÷^", "×÷", "××", "×^", "^÷", "^×", "^^", "√÷", "√×", "√^", "-÷", "-×", "-^", "+÷", "+×", "+^", ".." };
+            //Check for possible invalid 2-symbol combinations.
+            string[] invalidOperatorCombos = { "÷÷", "÷×", "÷^", "×÷", "××", "×^", "^÷", "^×", "^^", "√÷", "√×", "√^", "-÷", "-×", "-^", "+÷", "+×", "+^", "..", "0√", "1√", "2√", "3√", "4√", "5√", "6√", "7√", "8√", "9√" };
 
             foreach (string combo in invalidOperatorCombos)
             {
@@ -162,10 +229,9 @@ namespace CalculatorApp
             return true;
         }
 
-
+        //Clean numbers
         private string[] ObtainWorkingNumbers(string expression)
         {
-
             //Extract array of numbers, and remove empty elements of size nConsecutiveOperators - 1
             string[] numbers = expression.Split('-', '+', '÷', '×', '^', '√');
             numbers = numbers.Where(z => !string.IsNullOrWhiteSpace(z)).ToArray();
@@ -232,8 +298,6 @@ namespace CalculatorApp
         }
 
         private string[] SimplifyNumberSign(string[] numberArray)
-
-
         {
             //obtaining the operator sequence
             Regex numberParts = new Regex(@"[0-9.√]");
@@ -253,14 +317,11 @@ namespace CalculatorApp
                 //Search through all the parts of a number entry
                 foreach (char character in number)
                 {
-
                     //obtain the minuses
                     if (character == '-')
                     {
                         minusSequence += character;
                     }
-
-
                 }
 
                 //remove unnecessary minuses
@@ -270,7 +331,6 @@ namespace CalculatorApp
                 //update number 
                 numberArray[numberIndex] = minusSequence + baseNumber;
             }
-
 
             return numberArray;
         }
@@ -290,6 +350,7 @@ namespace CalculatorApp
             return numberArray;
         }
 
+        //Clean operators
         private string[] ObtainBaseOperators(string expression)
         {
             string[] operators = expression.Split('1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '.');
@@ -299,7 +360,6 @@ namespace CalculatorApp
 
             //remove blank elements
             operators = operators.Where(x => !string.IsNullOrWhiteSpace(x)).ToArray();
-
 
             return operators;
         }
@@ -314,8 +374,6 @@ namespace CalculatorApp
             //remove blank elements
             operators = operators.Where(x => !string.IsNullOrWhiteSpace(x)).ToArray();
 
-
-
             //Refine operators, and remove the ones that are actually part of the number
             for (int operatorIndex = 0; operatorIndex <= (operators.Length - 1); operatorIndex++)
             {
@@ -324,19 +382,17 @@ namespace CalculatorApp
                 //check if a sequence of 2 or more
                 if (operatorSequence.Length > 1)
                 {
-                    
                     //Extract real operator and update array
                     string realOperator = operatorSequence.ElementAt(0).ToString();
-
                     operators[operatorIndex] = realOperator;
                 }
             }
 
             return operators;
         }
+        #endregion
 
-
-
+        #region Display Functions
         private void DisplayError(string reason)
         {
             CalculatorGUI.mainDisplay.Text = "Error: " + reason;
@@ -345,7 +401,13 @@ namespace CalculatorApp
         private void SetLabels(string expression, string answer)
         {
             //Show the user their calculated expression
-            CalculatorGUI.postCalculatedExpression.Text = "= " + expression;
+            if (expression.Length >= 25)
+            {
+                //cut it down and replace the end with ... to show how it is too long
+                //make it so that it can display an equals sign at the start.
+            }
+            else CalculatorGUI.postCalculatedExpression.Text = "= " + expression;
+
 
             //Display answer
             CalculatorGUI.mainDisplay.Text = "= " + answer;
@@ -353,80 +415,6 @@ namespace CalculatorApp
             //Once done, work with the precalculatorDisplay, if they did not press equals
 
         }
-
-
-
-        #region Calculator Functions
-        private string Add(string firstNumber, string secondNumber)
-        {
-            return "";
-        }
-        private string Subtract(string firstNumber, string secondNumber)
-        {
-            return "";
-        }
-
-        private string Multiply(string firstNumber, string secondNumber)
-        {
-            return "";
-        }
-
-        private string Divide(string numerator, string denominator)
-        {
-
-
-
-            return "";
-        }
-
-        private string Exponent(string baseNumber, string power)
-        {
-
-            return "";
-        }
-
-        private double SquareRoot(string number)
-        {
-            //Obtain number of roots in the number
-            Regex root = new Regex(@"[√]");
-            int rootCount = root.Matches(number).Count;
-
-            if (rootCount == 0) return 0.00;
-
-            bool isNegative = false;
-
-            string nonNegativeNumber = "";
-
-            if (number.Contains("-"))
-            {
-                isNegative = true;
-                //Then number to be rooted will be everything but the first two chars
-                nonNegativeNumber = number.Remove(0, 1) + "";
-            }
-            else
-            {
-                nonNegativeNumber = number;
-            }
-
-
-
-            double workingNumber = Convert.ToDouble(nonNegativeNumber.Remove(0, rootCount) + "");
-
-            while (rootCount >= 1)
-            {
-                //Calculate root value
-                workingNumber = Math.Sqrt(workingNumber);
-                rootCount--;
-            }
-
-            if (isNegative) workingNumber = workingNumber * -1; //Add negative back on.
-
-            double result = workingNumber;
-
-            return result;
-        }
-
-
         #endregion
     }
 
@@ -448,10 +436,7 @@ namespace CalculatorApp
         public Chunk GetChunk(string[] numberArray, string[] operatorArray)
         {
             Chunk chunk = new Chunk();
-
-
             int numNumbers = numberArray.Length;
-            int numOperators = operatorArray.Length; //Number of operators in an expression will always be (numNumbers - 1)
 
             //check if there are enough 'ingredients' for a chunk be made
             if (numNumbers >= 2)
@@ -468,14 +453,9 @@ namespace CalculatorApp
                 operatorArray[n] = "";
             }
 
-            else
-            {
-                chunk.number1 = numberArray[0];
-            }
+            else chunk.number1 = numberArray[0];
 
             return chunk;
         }
-
-
     }
 }
