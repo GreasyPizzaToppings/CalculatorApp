@@ -10,14 +10,17 @@ namespace CalculatorApp
 
     class Calculator
     {
-        //Start working with the given expression, and try and calculate with it
-        public void Start(string expression)
+        //Start working with the given expression, and try and calculate with it. 
+        //Flag parameter indicates if this is a pre or post-equals-press expression.
+        public void Start(string expression, bool preEqualsPress)
         {
-            //Check for invalid inputs
-            if (IsValid(expression) == false)
+            //Check for invalid inputs, only if user presses equals
+            if (IsValid(expression, preEqualsPress) == false)
             {
                 return; //Could not set up successfully, then exit.
             }
+
+            Console.WriteLine("user input expression is " + expression);
 
             //Obtain cleaned operators and numbers needed for calculation(s)
             string[] numbers = ObtainWorkingNumbers(expression);
@@ -25,7 +28,11 @@ namespace CalculatorApp
 
             //Begin calculating and display result
             string answer = ComputeExpression(numbers, operators);
-            SetLabels(expression, answer);
+            
+            //Simplify any long answers for ease of display
+            answer = Exponent(answer, "1");
+
+            SetLabels(expression, answer, preEqualsPress);
         }
 
         private string ComputeExpression(string[] numbers, string[] operators)
@@ -67,9 +74,6 @@ namespace CalculatorApp
 
             //result is always the first number in the partially filled chunk
             string answer = chunk.number1;
-            
-            //Simplify any long answers for ease of display
-            answer = Exponent(answer, "1");
             return answer;
         }
 
@@ -150,7 +154,9 @@ namespace CalculatorApp
         #endregion
 
         #region Routines To Obtain Workable Input 
-        private bool IsValid(string expression)
+
+        //Check for errors in input. Only display then if equals has been pressed by user
+        private bool IsValid(string expression, bool preEqualsPress)
         {
             //Error message not required for this invalid case
             if (expression.Length == 0) return false;
@@ -159,7 +165,7 @@ namespace CalculatorApp
             Regex digits = new Regex(@"[0-9]");
             if (digits.Matches(expression).Count == 0)
             {
-                DisplayError("No Digits In Input");
+                DisplayError("No Digits In Input", preEqualsPress);
                 return false;
             }
 
@@ -169,7 +175,7 @@ namespace CalculatorApp
 
             if (badStartingSymbols.Matches(startSymbol).Count >= 1)
             {
-                DisplayError("Illegal starting symbol of " + startSymbol);
+                DisplayError("Illegal starting symbol of " + startSymbol, preEqualsPress);
                 return false;
             }
 
@@ -179,7 +185,7 @@ namespace CalculatorApp
 
             if (okEndingSymbols.Matches(endingSymbol).Count == 0)
             {
-                DisplayError("Illegal ending symbol of " + endingSymbol);
+                DisplayError("Illegal ending symbol of " + endingSymbol, preEqualsPress);
                 return false;
             }
 
@@ -190,7 +196,7 @@ namespace CalculatorApp
             {
                 if (expression.Contains(combo))
                 {
-                    DisplayError("Illegal symbol combo of " + combo);
+                    DisplayError("Illegal symbol combo of " + combo, preEqualsPress);
                     return false;
                 }
             }
@@ -204,13 +210,12 @@ namespace CalculatorApp
                     int nextChar = charIndex + 1;
                     if (expression.ElementAt(nextChar) == '-')
                     {
-                        DisplayError("Non-real number from √");
+                        DisplayError("Non-real number from √", preEqualsPress);
                         return false;
                     }
 
                 }
             }
-
 
             //check for numbers with two non-consecutive decimal points
             string[] numbers = ObtainWorkingNumbers(expression);
@@ -219,13 +224,11 @@ namespace CalculatorApp
                 var decimalCount = number.Count(x => x == '.');
                 if (decimalCount >= 2)
                 {
-                    DisplayError("Illegal quantity of decimal points in a number");
+                    DisplayError("Illegal quantity of decimal points in a number", preEqualsPress);
                     return false;
                 }
             }
 
-
-            //It is presumed to be valid if all checks passed
             return true;
         }
 
@@ -393,27 +396,41 @@ namespace CalculatorApp
         #endregion
 
         #region Display Functions
-        private void DisplayError(string reason)
+        private void DisplayError(string reason, bool preEqualsPress)
         {
-            CalculatorGUI.mainDisplay.Text = "Error: " + reason;
+            if (!preEqualsPress) CalculatorGUI.mainDisplay.Text = "Error: " + reason;
+            
+            //Avoid showing errors for this label, as there will be plenty as user is completing their expression
+            else CalculatorGUI.preCalculatedExpression.Text = ""; 
         }
 
-        private void SetLabels(string expression, string answer)
+        private void SetLabels(string expression, string answer, bool preEqualsPress)
         {
-            //Show the user their calculated expression
-            if (expression.Length >= 25)
+            if (preEqualsPress) //Then only set the precalculation label. 
             {
-                //cut it down and replace the end with ... to show how it is too long
-                //make it so that it can display an equals sign at the start.
+                CalculatorGUI.preCalculatedExpression.Text = "= " + answer;
+                return; 
             }
-            else CalculatorGUI.postCalculatedExpression.Text = "= " + expression;
 
+            //Expressions more than the maxDigits causes the text to change vertical alignment and be invisible
+            int maxDigits = 29;
+            if (expression.Length > maxDigits)
+            {
+                int excessDigits = expression.Length - maxDigits;
+
+                //remove excess digits to make it fit in the display
+                string alteredExpression = expression;
+                alteredExpression = alteredExpression.Remove(alteredExpression.Length - (excessDigits + 1), excessDigits) + "";
+
+                //Set label, and show user their input has been truncated
+                CalculatorGUI.postCalculatedExpression.Text = "= " + alteredExpression + "...";
+            }
+
+            else CalculatorGUI.postCalculatedExpression.Text = "= " + expression;
+            Console.WriteLine("Expression is: " + expression);
 
             //Display answer
             CalculatorGUI.mainDisplay.Text = "= " + answer;
-
-            //Once done, work with the precalculatorDisplay, if they did not press equals
-
         }
         #endregion
     }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
+using System.Linq;
 
 namespace CalculatorApp
 {
@@ -10,10 +11,8 @@ namespace CalculatorApp
 
         List<Button> buttonList = new List<Button>(); //make list for operator buttons
         public static Label postCalculatedExpression, mainDisplay, preCalculatedExpression; //declare screen labels
-
+        bool finishedCalculation = false; //Needed for display clearing purposes
         Calculator calculator = new Calculator(); //the calculation class object
-        bool finishedCalculation = false;
-
 
         public CalculatorGUI()
         {
@@ -21,10 +20,66 @@ namespace CalculatorApp
 
             //Initialise all the buttons and colour code them. 
             InitialiseCalculatorButtons();
-            ChangeButtonColours();
+            SetButtonColours();
 
             //make the input/output labels
             InitialiseCalculatorDisplays();
+        }
+
+        public void ClearDisplays()
+        {
+            //clear all 3 displays
+            postCalculatedExpression.Text = "";
+            mainDisplay.Text = "";
+            preCalculatedExpression.Text = "";
+        }
+
+        public void SetDigitButtonColours()
+        {
+            //Set blue colour for digit Buttons and decimal point
+            int[] digitIndexes = { 1, 2, 4, 5, 6, 8, 9, 10, 12, 13, 14 };
+            foreach (int index in digitIndexes)
+            {
+                buttonList[index].BackColor = Color.DarkGray;
+            }
+        }
+
+        public void SetOperatorButtonColours()
+        {
+            //Set black background, white text for operator buttons
+            int[] operatorIndexes = { 7, 11, 15, 16, 19, 20 };
+            foreach (int index in operatorIndexes)
+            {
+                buttonList[index].BackColor = Color.Black;
+                buttonList[index].ForeColor = Color.White;
+            }
+        }
+
+        public void InvertOperatorButtonColour(int btnIndex)
+        {
+            buttonList[btnIndex].BackColor = Color.White;
+            buttonList[btnIndex].ForeColor = Color.Black;
+        }
+
+        public void SetMemoryButtonColours()
+        {
+            int[] memoryIndexes = { 17, 18, 21, 22 };
+            foreach (int index in memoryIndexes)
+            {
+                buttonList[index].BackColor = Color.DarkOrange;
+            }
+        }
+
+        public void SetOtherButtonColours()
+        {
+            //Misc Buttons
+
+            //Clear button & Backspace, respectively
+            buttonList[0].BackColor = Color.CornflowerBlue;
+            buttonList[23].BackColor = Color.CornflowerBlue;
+
+            //Equals Button
+            buttonList[3].BackColor = Color.Yellow;
         }
 
         #region Setup Calculator GUI
@@ -45,9 +100,9 @@ namespace CalculatorApp
 
             postCalculatedExpression = new Label
             {
-                Size = new Size(labelWidth, 60),
+                Size = new Size(labelWidth, labelHeight),
                 ForeColor = textColor,
-                BackColor = Color.NavajoWhite,
+                BackColor = displayColor,
                 Location = new Point(startingX, startingY),
                 Font = new Font("Arial", 12),
                 TextAlign = ContentAlignment.MiddleLeft
@@ -136,40 +191,15 @@ namespace CalculatorApp
             }
         }
 
-        public void ChangeButtonColours()
+        public void SetButtonColours()
         {
-            //Set blue colour for digit Buttons and decimal point
-            int[] digitIndexes = { 1, 2, 4, 5, 6, 8, 9, 10, 12, 13, 14 };
-            foreach (int index in digitIndexes)
-            {
-                buttonList[index].BackColor = Color.DarkGray;
-            }
-
-            //Set black background, white text for operator buttons
-            int[] operatorIndexes = { 7, 11, 15, 16, 19, 20 };
-            foreach (int index in operatorIndexes)
-            {
-                buttonList[index].BackColor = Color.Black;
-                buttonList[index].ForeColor = Color.White;
-            }
-
-            int[] memoryIndexes = { 17, 18, 21, 22 };
-            foreach (int index in memoryIndexes)
-            {
-                buttonList[index].BackColor = Color.DarkOrange;
-            }
-
-            //Misc Buttons
-
-            //Clear button & Backspace, respectively
-            buttonList[0].BackColor = Color.CornflowerBlue;
-            buttonList[23].BackColor = Color.CornflowerBlue;
-
-            //Equals Button
-            buttonList[3].BackColor = Color.Yellow;
-
+            //Call all the button colour changing methods from one place for initialisation
+            SetDigitButtonColours();
+            SetOperatorButtonColours();
+            SetMemoryButtonColours();
+            SetOtherButtonColours();
         }
-        #endregion
+        #endregion        
 
         #region GUI Events
 
@@ -194,12 +224,19 @@ namespace CalculatorApp
 
         private void MainDisplay_TextChanged(object sender, EventArgs e)
         {
-            //set maximum character input limit one entire screen's worth of digits, which is about 60 long.
+            //Limit input length to 60 character.
             int maxLength = 60;
-
             if (mainDisplay.Text.Length >= maxLength)
             {
                 mainDisplay.Text = mainDisplay.Text.Remove(maxLength - 1, 1) + "";
+            }
+
+            //Try and pre-calculate their current expression, if the user were to press equals, but not after they have already pressed equals
+            if (mainDisplay.Text.Contains('=') == false)
+            {
+                Console.WriteLine("trying to precalculate");
+                string expression = mainDisplay.Text;
+                calculator.Start(expression, true);
             }
         }
 
@@ -207,22 +244,11 @@ namespace CalculatorApp
 
         #region Button Events
 
-        //Click Events for each operator
-        void BtnClear_Click(object sender, EventArgs e)
-        {
-            ClearDisplays();
-        }
-        void Btn0_Click(object sender, EventArgs e)
-        {
-            if (finishedCalculation)
-            {
-                ClearDisplays();
-                finishedCalculation = false; //once you input stuff, you start a new calculation
-            }
-            mainDisplay.Text += "0";
-        }
+        #region Numerical Input Buttons
         void BtnDecimalPoint_Click(object sender, EventArgs e)
         {
+            SetOperatorButtonColours(); //Reset any inverted operator buttons
+
             if (finishedCalculation)
             {
                 ClearDisplays();
@@ -231,20 +257,21 @@ namespace CalculatorApp
             mainDisplay.Text += ".";
         }
 
-        void BtnEquals_Click(object sender, EventArgs e)
+        void Btn0_Click(object sender, EventArgs e)
         {
-            finishedCalculation = false;
+            SetOperatorButtonColours(); //Reset any inverted operator buttons
 
-            string expression = mainDisplay.Text;
-
-            //send input to be processed and calculated
-            calculator.Start(expression);
-            finishedCalculation = true;
-
+            if (finishedCalculation)
+            {
+                ClearDisplays();
+                finishedCalculation = false; //once you input stuff, you start a new calculation
+            }
+            mainDisplay.Text += "0";
         }
-
         void Btn1_Click(object sender, EventArgs e)
         {
+            SetOperatorButtonColours(); //Reset any inverted operator buttons
+
             if (finishedCalculation)
             {
                 ClearDisplays();
@@ -256,6 +283,8 @@ namespace CalculatorApp
         }
         void Btn2_Click(object sender, EventArgs e)
         {
+            SetOperatorButtonColours(); //Reset any inverted operator buttons
+
             if (finishedCalculation)
             {
                 ClearDisplays();
@@ -265,6 +294,8 @@ namespace CalculatorApp
         }
         void Btn3_Click(object sender, EventArgs e)
         {
+            SetOperatorButtonColours(); //Reset any inverted operator buttons
+
             if (finishedCalculation)
             {
                 ClearDisplays();
@@ -272,17 +303,10 @@ namespace CalculatorApp
             }
             mainDisplay.Text += "3";
         }
-        void BtnPlus_Click(object sender, EventArgs e)
-        {
-            if (finishedCalculation)
-            {
-                ClearDisplays();
-                finishedCalculation = false; //once you input stuff, you start a new calculation
-            }
-            mainDisplay.Text += "+";
-        }
         void Btn4_Click(object sender, EventArgs e)
         {
+            SetOperatorButtonColours(); //Reset any inverted operator buttons
+
             if (finishedCalculation)
             {
                 ClearDisplays();
@@ -292,6 +316,8 @@ namespace CalculatorApp
         }
         void Btn5_Click(object sender, EventArgs e)
         {
+            SetOperatorButtonColours(); //Reset any inverted operator buttons
+
             if (finishedCalculation)
             {
                 ClearDisplays();
@@ -301,6 +327,8 @@ namespace CalculatorApp
         }
         void Btn6_Click(object sender, EventArgs e)
         {
+            SetOperatorButtonColours(); //Reset any inverted operator buttons
+
             if (finishedCalculation)
             {
                 ClearDisplays();
@@ -308,17 +336,10 @@ namespace CalculatorApp
             }
             mainDisplay.Text += "6";
         }
-        void BtnMinus_Click(object sender, EventArgs e)
-        {
-            if (finishedCalculation)
-            {
-                ClearDisplays();
-                finishedCalculation = false; //once you input stuff, you start a new calculation
-            }
-            mainDisplay.Text += "-";
-        }
         void Btn7_Click(object sender, EventArgs e)
         {
+            SetOperatorButtonColours(); //Reset any inverted operator buttons
+
             if (finishedCalculation)
             {
                 ClearDisplays();
@@ -328,6 +349,8 @@ namespace CalculatorApp
         }
         void Btn8_Click(object sender, EventArgs e)
         {
+            SetOperatorButtonColours(); //Reset any inverted operator buttons
+
             if (finishedCalculation)
             {
                 ClearDisplays();
@@ -337,6 +360,8 @@ namespace CalculatorApp
         }
         void Btn9_Click(object sender, EventArgs e)
         {
+            SetOperatorButtonColours(); //Reset any inverted operator buttons
+
             if (finishedCalculation)
             {
                 ClearDisplays();
@@ -344,12 +369,56 @@ namespace CalculatorApp
             }
             mainDisplay.Text += "9";
         }
+        #endregion
+
+        #region Calculator Operator Buttons
+
+        void BtnPlus_Click(object sender, EventArgs e)
+        {
+            //Reset all other operator colours, but make itself inverted
+            SetOperatorButtonColours();
+            InvertOperatorButtonColour(7); //Plus index is 7
+
+            if (finishedCalculation)
+            {
+                ClearDisplays();
+                finishedCalculation = false; //once you input stuff, you start a new calculation
+            }
+            mainDisplay.Text += "+";
+        }
+
+        void BtnMinus_Click(object sender, EventArgs e)
+        {
+            //Reset all other operator colours, but make itself inverted
+            SetOperatorButtonColours();
+            InvertOperatorButtonColour(11); //Minus index is 11
+            
+            if (finishedCalculation)
+            {
+                ClearDisplays();
+                finishedCalculation = false; //once you input stuff, you start a new calculation
+            }
+            mainDisplay.Text += "-";
+        }
         void BtnMultiply_Click(object sender, EventArgs e)
         {
+            //Reset all other operator colours, but make itself inverted
+            SetOperatorButtonColours();
+            InvertOperatorButtonColour(15); //Multiply index is 15
+
+            if (finishedCalculation)
+            {
+                ClearDisplays();
+                finishedCalculation = false; //once you input stuff, you start a new calculation
+            }
             mainDisplay.Text += "×";
         }
         void BtnSquareRoot_Click(object sender, EventArgs e)
         {
+            //Reset all other operator colours, but make itself inverted
+            SetOperatorButtonColours();
+            InvertOperatorButtonColour(16); //Square root index is 16
+
             if (finishedCalculation)
             {
                 ClearDisplays();
@@ -357,33 +426,84 @@ namespace CalculatorApp
             }
             mainDisplay.Text += "√";
         }
+        void BtnDivide_Click(object sender, EventArgs e)
+        {
+            //Reset all other operator colours, but make itself inverted
+            SetOperatorButtonColours();
+            InvertOperatorButtonColour(19); //Divide index is 19
+
+            if (finishedCalculation)
+            {
+                ClearDisplays();
+                finishedCalculation = false; //once you input stuff, you start a new calculation
+            }
+            mainDisplay.Text += "÷";
+        }
+        
+        void BtnExponent_Click(object sender, EventArgs e)
+        {
+            //Reset all other operator colours, but make itself inverted
+            SetOperatorButtonColours();
+            InvertOperatorButtonColour(20); //Exponent index is 20
+
+            if (finishedCalculation)
+            {
+                ClearDisplays();
+                finishedCalculation = false; //once you input stuff, you start a new calculation
+            }
+            mainDisplay.Text += "^";
+        }
+        #endregion  
+
+        #region Calculator Memory Buttons
         void BtnMemoryClear_Click(object sender, EventArgs e)
         {
+            SetOperatorButtonColours(); //Reset any inverted operator buttons
             mainDisplay.Text = "Memory clear";
         }
         void BtnMemoryPlus_Click(object sender, EventArgs e)
         {
+            SetOperatorButtonColours(); //Reset any inverted operator buttons
             mainDisplay.Text = "Memory plus";
-        }
-        void BtnDivide_Click(object sender, EventArgs e)
-        {
-            mainDisplay.Text += "÷";
-        }
-        void BtnExponent_Click(object sender, EventArgs e)
-        {
-            mainDisplay.Text += "^";
         }
         void BtnMemoryRecall_Click(object sender, EventArgs e)
         {
+            SetOperatorButtonColours(); //Reset any inverted operator buttons
             mainDisplay.Text = "Memory recall";
         }
         void BtnMemoryMinus_Click(object sender, EventArgs e)
         {
+            SetOperatorButtonColours(); //Reset any inverted operator buttons
             mainDisplay.Text = "Memory Minus";
         }
+        #endregion
 
+        //Other calculator user buttons
+        void BtnClear_Click(object sender, EventArgs e)
+        {
+            SetOperatorButtonColours(); //Reset any inverted operator buttons
+            ClearDisplays();
+        }
+        void BtnEquals_Click(object sender, EventArgs e)
+        {
+            SetOperatorButtonColours(); //Reset any inverted operator buttons
+            finishedCalculation = false;
+
+            //remove any initial '= ' characters from previous calculations being shown
+            string expression = mainDisplay.Text;
+            if (expression.Length >= 2 && expression.ElementAt(0) == '=') expression = expression.Remove(0, 2) + null;
+            
+            //send input to be processed and calculated
+            calculator.Start(expression, false);
+
+            //Reset the precalculation label, as the mainDisplay is now being used for the same purpose.
+            preCalculatedExpression.Text = "";
+
+            finishedCalculation = true;
+        }
         void BtnBackspace_Click(object sender, EventArgs e)
         {
+            SetOperatorButtonColours(); //Reset any inverted operator buttons
             //delete the last character if there is input already
             if (mainDisplay.Text.Length >= 1)
             {
@@ -391,17 +511,7 @@ namespace CalculatorApp
             }
 
         }
-
         #endregion
-
-        public void ClearDisplays()
-        {
-            //clear all 3 displays
-            postCalculatedExpression.Text = "";
-            mainDisplay.Text = "";
-            preCalculatedExpression.Text = "";
-        }
-
     }
 }
 
@@ -411,10 +521,4 @@ namespace CalculatorApp
 //3. Make typing an available input into the calculator. 
 
 //TODO:
-//Implement memory functions
-//Try a full range of inputs and test for errors
-//Implement pre-calculation feature
-//Make operator buttons change apperance when used.
-
-//Problems:
-//Pressing equals multiple times makes a second '=' appear in the postcalculation label
+//****Implement memory functions
