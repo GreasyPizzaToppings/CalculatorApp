@@ -10,6 +10,9 @@ namespace CalculatorApp
 
     class Calculator
     {
+        //Set the global memory value for memory operations
+        private double memoryValue = 0;
+
         //Start working with the given expression, and try and calculate with it. 
         //Flag parameter indicates if this is a pre or post-equals-press expression.
         public void Start(string expression, bool preEqualsPress)
@@ -20,9 +23,7 @@ namespace CalculatorApp
                 return; //Could not set up successfully, then exit.
             }
 
-            Console.WriteLine("user input expression is " + expression);
-
-            //Obtain cleaned operators and numbers needed for calculation(s)
+            //Obtain cleaned operators and numbers needed for calculation(s) 
             string[] numbers = ObtainWorkingNumbers(expression);
             string[] operators = ObtainWorkingOperators(expression);
 
@@ -77,7 +78,7 @@ namespace CalculatorApp
             return answer;
         }
 
-        #region Calculator Functions
+        #region Numerical Calculator Functions
         private string Add(string firstNumber, string secondNumber)
         {
             double total = Convert.ToDouble(firstNumber) + Convert.ToDouble(secondNumber);
@@ -152,6 +153,73 @@ namespace CalculatorApp
             return result;
         }
         #endregion
+
+        #region Memory Calculator Functions
+
+        public void MemoryClear()
+        {
+            Console.WriteLine("Value in memory right before clearing is: " + memoryValue.ToString());
+
+            memoryValue = 0; 
+        }
+
+        public void MemoryPlus()
+        {
+            string inputText = CalculatorGUI.mainDisplay.Text;
+
+            //Try and add the current value in the display to the memory
+            try
+            {
+                //Remove any equals signs from previous calculations, as it should be able to add previously calculated values to memory
+                if (inputText.Contains('=') == true) 
+                {
+                    inputText = inputText.Remove(0, 2) + null; //remove '= ' 
+                }
+
+                double valueToAdd = Convert.ToDouble(inputText);
+                memoryValue += valueToAdd; //Finally add value to memory
+            }
+            catch
+            {
+                //Display an error if their input was not nothing.
+                if(inputText.Length >= 1) DisplayError("Invalid Numeric value to add to Memory", false);
+            }
+        }
+
+        public void MemoryMinus()
+        {
+            string inputText = CalculatorGUI.mainDisplay.Text;
+
+            //Try and add the current value in the display to the memory
+            try
+            {
+                //Remove any equals signs from previous calculations, as it should be able to add previously calculated values to memory
+                if (inputText.Contains('=') == true)
+                {
+                    inputText = inputText.Remove(0, 2) + null; //remove '= ' 
+                }
+
+                double valueToSubtract = Convert.ToDouble(inputText);
+                memoryValue -= valueToSubtract; //Finally add value to memory
+            }
+            catch
+            {
+                //Display an error if their input was not nothing.
+                if (inputText.Length >= 1) DisplayError("Invalid Numeric value to subtract from Memory", false);
+            }
+        }
+
+        public void MemoryRecall()
+        {
+            if (memoryValue == 0) return; //Avoid adding a zero to their input.
+
+            //Add it to their working output/input
+
+            CalculatorGUI.mainDisplay.Text += memoryValue.ToString();
+        }
+
+        #endregion
+
 
         #region Routines To Obtain Workable Input 
 
@@ -427,7 +495,6 @@ namespace CalculatorApp
             }
 
             else CalculatorGUI.postCalculatedExpression.Text = "= " + expression;
-            Console.WriteLine("Expression is: " + expression);
 
             //Display answer
             CalculatorGUI.mainDisplay.Text = "= " + answer;

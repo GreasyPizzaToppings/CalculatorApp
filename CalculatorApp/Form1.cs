@@ -140,7 +140,7 @@ namespace CalculatorApp
 
         public void InitialiseCalculatorButtons()
         {
-            EventHandler[] eventMethodNames = { BtnClear_Click, Btn0_Click, BtnDecimalPoint_Click, BtnEquals_Click, Btn1_Click, Btn2_Click, Btn3_Click, BtnPlus_Click, Btn4_Click, Btn5_Click, Btn6_Click, BtnMinus_Click, Btn7_Click, Btn8_Click, Btn9_Click, BtnMultiply_Click, BtnSquareRoot_Click, BtnMemoryClear_Click, BtnMemoryPlus_Click, BtnDivide_Click, BtnExponent_Click, BtnMemoryRecall_Click, BtnMemoryMinus_Click, BtnBackspace_Click };
+            EventHandler[] eventMethodNames = { BtnAllClear_Click, Btn0_Click, BtnDecimalPoint_Click, BtnEquals_Click, Btn1_Click, Btn2_Click, Btn3_Click, BtnPlus_Click, Btn4_Click, Btn5_Click, Btn6_Click, BtnMinus_Click, Btn7_Click, Btn8_Click, Btn9_Click, BtnMultiply_Click, BtnSquareRoot_Click, BtnMemoryClear_Click, BtnMemoryPlus_Click, BtnDivide_Click, BtnExponent_Click, BtnMemoryRecall_Click, BtnMemoryMinus_Click, BtnBackspace_Click };
             string[] buttonSymbols = { "AC", "0", ".", "=", "1", "2", "3", "+", "4", "5", "6", "-", "7", "8", "9", "×", "√", "MC", "M+", "÷", "^", "MR", "M-", "⌫" };
 
             //initialise button instance
@@ -459,30 +459,31 @@ namespace CalculatorApp
         void BtnMemoryClear_Click(object sender, EventArgs e)
         {
             SetOperatorButtonColours(); //Reset any inverted operator buttons
-            mainDisplay.Text = "Memory clear";
+            calculator.MemoryClear(); //Reset memory value
         }
         void BtnMemoryPlus_Click(object sender, EventArgs e)
         {
             SetOperatorButtonColours(); //Reset any inverted operator buttons
-            mainDisplay.Text = "Memory plus";
+            calculator.MemoryPlus();
         }
         void BtnMemoryRecall_Click(object sender, EventArgs e)
         {
             SetOperatorButtonColours(); //Reset any inverted operator buttons
-            mainDisplay.Text = "Memory recall";
+            calculator.MemoryRecall();
         }
         void BtnMemoryMinus_Click(object sender, EventArgs e)
         {
             SetOperatorButtonColours(); //Reset any inverted operator buttons
-            mainDisplay.Text = "Memory Minus";
+            calculator.MemoryMinus();
         }
         #endregion
 
         //Other calculator user buttons
-        void BtnClear_Click(object sender, EventArgs e)
+        void BtnAllClear_Click(object sender, EventArgs e)
         {
             SetOperatorButtonColours(); //Reset any inverted operator buttons
             ClearDisplays();
+            calculator.MemoryClear(); //Clear memory as well
         }
         void BtnEquals_Click(object sender, EventArgs e)
         {
@@ -519,6 +520,3 @@ namespace CalculatorApp
 //1. BEDMAS on operations, and to not just execute sequentially.
 //2. Various colour schemes that can be selected.
 //3. Make typing an available input into the calculator. 
-
-//TODO:
-//****Implement memory functions
