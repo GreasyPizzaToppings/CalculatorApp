@@ -82,6 +82,7 @@ namespace CalculatorApp
             buttonList[3].BackColor = Color.Yellow;
         }
 
+
         #region Setup Calculator GUI
         public void InitialiseCalculatorDisplays()
         {
@@ -140,8 +141,8 @@ namespace CalculatorApp
 
         public void InitialiseCalculatorButtons()
         {
-            EventHandler[] eventMethodNames = { BtnAllClear_Click, Btn0_Click, BtnDecimalPoint_Click, BtnEquals_Click, Btn1_Click, Btn2_Click, Btn3_Click, BtnPlus_Click, Btn4_Click, Btn5_Click, Btn6_Click, BtnMinus_Click, Btn7_Click, Btn8_Click, Btn9_Click, BtnMultiply_Click, BtnSquareRoot_Click, BtnMemoryClear_Click, BtnMemoryPlus_Click, BtnDivide_Click, BtnExponent_Click, BtnMemoryRecall_Click, BtnMemoryMinus_Click, BtnBackspace_Click };
-            string[] buttonSymbols = { "AC", "0", ".", "=", "1", "2", "3", "+", "4", "5", "6", "-", "7", "8", "9", "×", "√", "MC", "M+", "÷", "^", "MR", "M-", "⌫" };
+            EventHandler[] eventMethodNames = { BtnClear_Click, Btn0_Click, BtnDecimalPoint_Click, BtnEquals_Click, Btn1_Click, Btn2_Click, Btn3_Click, BtnPlus_Click, Btn4_Click, Btn5_Click, Btn6_Click, BtnMinus_Click, Btn7_Click, Btn8_Click, Btn9_Click, BtnMultiply_Click, BtnSquareRoot_Click, BtnMemoryClear_Click, BtnMemoryPlus_Click, BtnDivide_Click, BtnExponent_Click, BtnMemoryRecall_Click, BtnMemoryMinus_Click, BtnBackspace_Click };
+            string[] buttonSymbols = { "&C", "&0", "&.", "&=", "&1", "&2", "&3", "&+", "&4", "&5", "&6", "&-", "&7", "&8", "&9", "×", "√", "MC", "M+", "÷", "&^", "MR", "M-", "⌫" };
 
             //initialise button instance
             Button btnOperators = new Button();
@@ -199,9 +200,28 @@ namespace CalculatorApp
             SetMemoryButtonColours();
             SetOtherButtonColours();
         }
-        #endregion        
-
+        #endregion
         #region GUI Events
+
+        //Add in the other keyboard shortcuts for accesskeys that were not applicable.
+        private void CalculatorGUI_KeyUp(object sender, KeyEventArgs e)
+        {   
+            switch (e.KeyData)
+            {
+                case Keys.R: //pressing r is the shortcut for roots
+                    mainDisplay.Text += '√';
+                    break;
+                case (Keys.OemQuestion): //pressing / is the shortcut for divide. Divide does not work, but oemquestion does.
+                    mainDisplay.Text += '÷';
+                    break;
+                case (Keys.Shift | Keys.D8): //pressing * is the shortcut for multiply
+                    mainDisplay.Text += '×';
+                    break;
+                case Keys.Back:
+                    Backspace();
+                    break;
+            }
+        }
 
         private void CalculatorGUI_Resize(object sender, EventArgs e)
         {
@@ -234,14 +254,12 @@ namespace CalculatorApp
             //Try and pre-calculate their current expression, if the user were to press equals, but not after they have already pressed equals
             if (mainDisplay.Text.Contains('=') == false)
             {
-                Console.WriteLine("trying to precalculate");
                 string expression = mainDisplay.Text;
                 calculator.Start(expression, true);
             }
         }
 
         #endregion
-
         #region Button Events
 
         #region Numerical Input Buttons
@@ -479,12 +497,12 @@ namespace CalculatorApp
         #endregion
 
         //Other calculator user buttons
-        void BtnAllClear_Click(object sender, EventArgs e)
+        void BtnClear_Click(object sender, EventArgs e)
         {
             SetOperatorButtonColours(); //Reset any inverted operator buttons
             ClearDisplays();
-            calculator.MemoryClear(); //Clear memory as well
         }
+
         void BtnEquals_Click(object sender, EventArgs e)
         {
             SetOperatorButtonColours(); //Reset any inverted operator buttons
@@ -493,7 +511,7 @@ namespace CalculatorApp
             //remove any initial '= ' characters from previous calculations being shown
             string expression = mainDisplay.Text;
             if (expression.Length >= 2 && expression.ElementAt(0) == '=') expression = expression.Remove(0, 2) + null;
-            
+
             //send input to be processed and calculated
             calculator.Start(expression, false);
 
@@ -502,21 +520,21 @@ namespace CalculatorApp
 
             finishedCalculation = true;
         }
+
         void BtnBackspace_Click(object sender, EventArgs e)
         {
             SetOperatorButtonColours(); //Reset any inverted operator buttons
+            Backspace();
+        }
+
+        void Backspace()
+        {
             //delete the last character if there is input already
             if (mainDisplay.Text.Length >= 1)
             {
                 mainDisplay.Text = mainDisplay.Text.Remove((mainDisplay.Text.Length - 1), 1) + "";
             }
-
         }
         #endregion
     }
 }
-
-//Potential features to incorporate once basic concepts are working:
-//1. BEDMAS on operations, and to not just execute sequentially.
-//2. Various colour schemes that can be selected.
-//3. Make typing an available input into the calculator. 

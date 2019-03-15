@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -11,12 +13,15 @@ namespace CalculatorApp
     class Calculator
     {
         //Set the global memory value for memory operations
-        private double memoryValue = 0;
+        private double memoryValue = 0.00;
 
         //Start working with the given expression, and try and calculate with it. 
         //Flag parameter indicates if this is a pre or post-equals-press expression.
         public void Start(string expression, bool preEqualsPress)
         {
+            //Exponent numbers in input can only be the result of a previous calcuation. Return immediately.
+            if (expression.Contains("E")) return; 
+
             //Check for invalid inputs, only if user presses equals
             if (IsValid(expression, preEqualsPress) == false)
             {
@@ -43,8 +48,8 @@ namespace CalculatorApp
 
             do
             {
-                //Make a chunk to compute. Non-full chunks mean only one number is left - the answer.
                 chunk = chunk.GetChunk(numbers, operators);
+
                 if (chunk.IsFull() == false) break;
 
                 //Evaluate by calling the appropriate method
@@ -158,9 +163,7 @@ namespace CalculatorApp
 
         public void MemoryClear()
         {
-            Console.WriteLine("Value in memory right before clearing is: " + memoryValue.ToString());
-
-            memoryValue = 0; 
+            memoryValue = 0; //clearing the value is the same as setting it to zero.
         }
 
         public void MemoryPlus()
@@ -171,18 +174,18 @@ namespace CalculatorApp
             try
             {
                 //Remove any equals signs from previous calculations, as it should be able to add previously calculated values to memory
-                if (inputText.Contains('=') == true) 
+                if (inputText.Contains('=') == true)
                 {
                     inputText = inputText.Remove(0, 2) + null; //remove '= ' 
                 }
 
-                double valueToAdd = Convert.ToDouble(inputText);
-                memoryValue += valueToAdd; //Finally add value to memory
+                double valueToSubtract = Convert.ToDouble(inputText);
+                memoryValue += valueToSubtract; //Finally add value to memory
             }
             catch
             {
                 //Display an error if their input was not nothing.
-                if(inputText.Length >= 1) DisplayError("Invalid Numeric value to add to Memory", false);
+                if (inputText.Length >= 1) DisplayError("Invalid Numeric value to subtract from Memory", false);
             }
         }
 
@@ -213,11 +216,52 @@ namespace CalculatorApp
         {
             if (memoryValue == 0) return; //Avoid adding a zero to their input.
 
-            //Add it to their working output/input
+            //Print out exponent number manually. Avoid putting 'E' into the input expression.
+            if (memoryValue.ToString().Contains('E'))
+            {
+                 
+                string[] numberParts = memoryValue.ToString().Split('E');
+                string baseNumber = numberParts[0];
+                //remove decimal point if applicable
+                if (baseNumber.Contains('.'))
+                {
+                    baseNumber = baseNumber.Remove(baseNumber.IndexOf('.'), 1) + "";
+                }
 
+                int exponent = Convert.ToInt32(numberParts[1]);
+
+                string fullNumber = "";
+
+                if (exponent < 0) //Negative exponents have n-1 zeroes to the right of the decimal point before base num 
+                {
+                    //Give the start of the number the correct sign.
+                    if (Convert.ToInt16(baseNumber) < 0)
+                    {
+                        fullNumber = "-0.";
+                        baseNumber = baseNumber.Remove(0, 1) + "";
+                    }
+                    else fullNumber = "0.";
+                    
+                    //Add in the zeroes
+                    for (int j = 1; j < exponent * -1; j++) { fullNumber += "0"; }
+                    fullNumber += baseNumber;
+                }
+
+                else //zeroes go the right, like normal
+                {
+                    fullNumber += baseNumber;
+                    for (int i = 0; i < exponent; i++) { fullNumber += "0"; }
+                }
+
+                //Display full number with no Exponent.
+                CalculatorGUI.mainDisplay.Text += fullNumber;
+                return;
+            }
+
+        
             CalculatorGUI.mainDisplay.Text += memoryValue.ToString();
         }
-
+        
         #endregion
 
 
@@ -303,8 +347,10 @@ namespace CalculatorApp
         //Clean numbers
         private string[] ObtainWorkingNumbers(string expression)
         {
-            //Extract array of numbers, and remove empty elements of size nConsecutiveOperators - 1
+            //Extract numbers. Only split by - and + if the previous character was not an E
             string[] numbers = expression.Split('-', '+', '÷', '×', '^', '√');
+            
+            //Remove empty elements of size nConsecutiveOperators - 1
             numbers = numbers.Where(z => !string.IsNullOrWhiteSpace(z)).ToArray();
 
 
@@ -312,7 +358,7 @@ namespace CalculatorApp
             string startingOperator = "";
             bool firstDigitDetected = false;
             int charNumber = 0;
-            Regex numberParts = new Regex(@"[0-9.]");
+            Regex numberParts = new Regex(@"[0-9.E]");
 
             while (firstDigitDetected == false)
             {
@@ -360,7 +406,7 @@ namespace CalculatorApp
             }
 
             //Remove unnecessary pluses or minuses at the front
-            numbers = SimplifyNumberSign(numbers);
+            numbers = SimplifyArrayNumbers(numbers);
 
             //Remove the '√' sign from the number by evaluation to make them truly workable
             numbers = EvaluateRoots(numbers);
@@ -368,10 +414,10 @@ namespace CalculatorApp
             return numbers;
         }
 
-        private string[] SimplifyNumberSign(string[] numberArray)
+        private string[] SimplifyArrayNumbers(string[] numberArray)
         {
             //obtaining the operator sequence
-            Regex numberParts = new Regex(@"[0-9.√]");
+            Regex numberParts = new Regex(@"[0-9.√E]");
 
             //Search through all the number entries
             for (int numberIndex = 0; numberIndex <= numberArray.Length - 1; numberIndex++)
@@ -424,7 +470,9 @@ namespace CalculatorApp
         //Clean operators
         private string[] ObtainBaseOperators(string expression)
         {
-            string[] operators = expression.Split('1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '.');
+            //new lines. Testing
+            string[] stringSeparators = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "."};
+            string[] operators = expression.Split(stringSeparators, StringSplitOptions.None);
 
             //remove first element, as it is part of the number
             operators[0] = "";
@@ -437,7 +485,9 @@ namespace CalculatorApp
 
         private string[] ObtainWorkingOperators(string expression)
         {
-            string[] operators = expression.Split('1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '.');
+            //new lines. Testing
+            string[] stringSeparators = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "."};
+            string[] operators = expression.Split(stringSeparators, StringSplitOptions.None);
 
             //remove first element, as it is part of the number
             operators[0] = "";
@@ -531,13 +581,19 @@ namespace CalculatorApp
                 chunk.calculatorOperator = operatorArray[n];
                 chunk.number2 = numberArray[n + 1];
 
-                //update arrays
+                //update arrays, only if equals has been pressed
+
                 numberArray[n] = "";
                 numberArray[n + 1] = "";
                 operatorArray[n] = "";
+
             }
 
-            else chunk.number1 = numberArray[0];
+            else
+            {
+                chunk.number1 = numberArray[0];
+            }
+            
 
             return chunk;
         }

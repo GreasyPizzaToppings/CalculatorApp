@@ -37,9 +37,12 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(309, 521);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.KeyPreview = true;
             this.Name = "CalculatorGUI";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Calculator";
             this.Paint += new System.Windows.Forms.PaintEventHandler(this.CalculatorGUI_Paint);
+            this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.CalculatorGUI_KeyUp);
             this.Resize += new System.EventHandler(this.CalculatorGUI_Resize);
             this.ResumeLayout(false);
 
