@@ -22,7 +22,7 @@ namespace CalculatorApp
             InitialiseCalculatorButtons();
             SetButtonColours();
 
-            //make the input/output labels
+            //make the input/output displays
             InitialiseCalculatorDisplays();
         }
 
@@ -34,6 +34,7 @@ namespace CalculatorApp
             preCalculatedExpression.Text = "";
         }
 
+        #region Colour Changing
         public void SetDigitButtonColours()
         {
             //Set blue colour for digit Buttons and decimal point
@@ -81,13 +82,12 @@ namespace CalculatorApp
             //Equals Button
             buttonList[3].BackColor = Color.Yellow;
         }
-
+        #endregion
 
         #region Setup Calculator GUI
         public void InitialiseCalculatorDisplays()
         {
             //displays fit perfectly inside the border that is drawn
-
             int labelWidth = 298;
             int labelHeight = 32;
 
@@ -162,8 +162,6 @@ namespace CalculatorApp
                     Size = new Size(btnWidth, btnHeight),
                     Font = new Font("Arial", 18),
                     FlatStyle = FlatStyle.Popup,
-
-
                     //Add the correct symbol to each button
                     Text = buttonSymbols[buttonCount]
                 };
@@ -177,10 +175,7 @@ namespace CalculatorApp
                     btnX = 3; //reset and align grid upwards
                     btnY -= (btnHeight + 2);
                 }
-                else
-                {
-                    btnX += btnWidth + 1;
-                }
+                else btnX += btnWidth + 1;
             }
 
             //Assign each button to each click event
@@ -201,6 +196,7 @@ namespace CalculatorApp
             SetOtherButtonColours();
         }
         #endregion
+
         #region GUI Events
 
         //Add in the other keyboard shortcuts for accesskeys that were not applicable.
@@ -208,13 +204,13 @@ namespace CalculatorApp
         {   
             switch (e.KeyData)
             {
-                case Keys.R: //pressing r is the shortcut for roots
+                case Keys.R: //'r' is the shortcut for roots
                     mainDisplay.Text += '√';
                     break;
-                case (Keys.OemQuestion): //pressing / is the shortcut for divide. Divide does not work, but oemquestion does.
+                case (Keys.OemQuestion): // '/' is the shortcut for divide. Divide does not work, but oemquestion does.
                     mainDisplay.Text += '÷';
                     break;
-                case (Keys.Shift | Keys.D8): //pressing * is the shortcut for multiply
+                case (Keys.Shift | Keys.D8): //'*' is the shortcut for multiply
                     mainDisplay.Text += '×';
                     break;
                 case Keys.Back:
@@ -260,6 +256,7 @@ namespace CalculatorApp
         }
 
         #endregion
+
         #region Button Events
 
         #region Numerical Input Buttons
@@ -296,8 +293,6 @@ namespace CalculatorApp
                 finishedCalculation = false; //once you input stuff, you start a new calculation
             }
             mainDisplay.Text += "1";
-
-
         }
         void Btn2_Click(object sender, EventArgs e)
         {
@@ -477,7 +472,7 @@ namespace CalculatorApp
         void BtnMemoryClear_Click(object sender, EventArgs e)
         {
             SetOperatorButtonColours(); //Reset any inverted operator buttons
-            calculator.MemoryClear(); //Reset memory value
+            calculator.MemoryClear(); 
         }
         void BtnMemoryPlus_Click(object sender, EventArgs e)
         {
