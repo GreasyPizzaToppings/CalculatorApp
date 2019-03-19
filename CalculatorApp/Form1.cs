@@ -18,6 +18,11 @@ namespace CalculatorApp
         {
             InitializeComponent();
 
+            Setup();
+        }
+
+        public void Setup()
+        {
             //Initialise all the buttons and colour code them. 
             InitialiseCalculatorButtons();
             SetButtonColours();
@@ -25,6 +30,7 @@ namespace CalculatorApp
             //make the input/output displays
             InitialiseCalculatorDisplays();
         }
+
 
         public void ClearDisplays()
         {

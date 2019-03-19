@@ -19,13 +19,10 @@ namespace CalculatorApp
         public void Start(string expression, bool preEqualsPress)
         {
             //Exponent numbers in input can only be the result of a previous calcuation. Return immediately.
-            if (expression.Contains("E")) return; 
+            if (expression.Contains("E")) return;
 
             //Check for invalid inputs, only if user presses equals
-            if (IsValid(expression, preEqualsPress) == false)
-            {
-                return; 
-            }
+            if (IsValid(expression, preEqualsPress) == false) return;
 
             //Obtain cleaned operators and numbers needed for calculation(s) 
             string[] numbers = ObtainWorkingNumbers(expression);
@@ -40,13 +37,11 @@ namespace CalculatorApp
 
         private string ComputeExpression(string[] numbers, string[] operators)
         {
-            //Calculate expression by building 'chunks' of the form number, operator, number. 
             Chunk chunk = new Chunk();
 
-            do
+            do //Build and calculate chunks until done
             {
                 chunk = chunk.GetChunk(numbers, operators);
-
                 if (chunk.IsFull() == false) break;
 
                 //Evaluate by calling the appropriate method
@@ -76,47 +71,40 @@ namespace CalculatorApp
             } while (chunk.IsFull());
 
             //result is always the first number in the partially filled chunk
-            string answer = chunk.number1;
-            return answer;
+            return chunk.number1;
         }
 
         #region Numerical Calculator Functions
         private string Add(string firstNumber, string secondNumber)
         {
             double total = Convert.ToDouble(firstNumber) + Convert.ToDouble(secondNumber);
-            string textAnswer = total.ToString();
-            return textAnswer;
+            return total.ToString();
         }
         private string Subtract(string firstNumber, string secondNumber)
         {
             double total = Convert.ToDouble(firstNumber) - Convert.ToDouble(secondNumber);
-            string textAnswer = total.ToString();
-            return textAnswer;
+            return total.ToString();
         }
 
         private string Multiply(string firstNumber, string secondNumber)
         {
             double total = Convert.ToDouble(firstNumber) * Convert.ToDouble(secondNumber);
-            string textAnswer = total.ToString();
-            return textAnswer;
+            return total.ToString();
         }
 
         private string Divide(string numerator, string denominator)
         {
             double total = Convert.ToDouble(numerator) / Convert.ToDouble(denominator);
-            string textAnswer = total.ToString();
-            return textAnswer;
+            return total.ToString();
         }
 
         private string Exponent(string baseNumber, string power)
         {
             double workingBase = Convert.ToDouble(baseNumber);
             double workingExponent = Convert.ToDouble(power);
-
             double answer = Math.Pow(workingBase, workingExponent);
 
-            string textAnswer = answer.ToString();
-            return textAnswer;
+            return answer.ToString();
         }
 
         private double SquareRoot(string number)
@@ -135,16 +123,12 @@ namespace CalculatorApp
                 //Then number to be rooted will be everything but the first two chars
                 nonNegativeNumber = number.Remove(0, 1) + "";
             }
-            else
-            {
-                nonNegativeNumber = number;
-            }
+            else nonNegativeNumber = number;
 
             double workingNumber = Convert.ToDouble(nonNegativeNumber.Remove(0, rootCount) + "");
 
-            while (rootCount >= 1)
+            while (rootCount >= 1) //Calculate root values until done
             {
-                //Calculate root value
                 workingNumber = Math.Sqrt(workingNumber);
                 rootCount--;
             }
@@ -156,11 +140,10 @@ namespace CalculatorApp
         }
         #endregion
 
-        #region Memory Calculator Functions
-
+        #region Memory Calculator Functions 
         public void MemoryClear()
         {
-            memoryValue = 0; //clearing the value is the same as setting it to zero.
+            memoryValue = 0; //Clearing means setting to zero
         }
 
         public void MemoryPlus()
@@ -170,19 +153,14 @@ namespace CalculatorApp
             //Try and add the current value in the display to the memory
             try
             {
-                //Remove any equals signs from previous calculations, as it should be able to add previously calculated values to memory
-                if (inputText.Contains('=') == true)
-                {
-                    inputText = inputText.Remove(0, 2) + null; 
-                }
-
-                double valueToSubtract = Convert.ToDouble(inputText);
-                memoryValue += valueToSubtract; 
+                //Remove any equals signs from previous calculations
+                if (inputText.Contains('=')) inputText = inputText.Remove(0, 2) + null;
+                memoryValue += Convert.ToDouble(inputText);
             }
-            catch
+
+            catch //Display an error if their input was not nothing.
             {
-                //Display an error if their input was not nothing.
-                if (inputText.Length >= 1) DisplayError("Invalid Numeric value to subtract from Memory", false);
+                if (inputText.Length >= 1) DisplayError("Invalid Input Value To Add To Memory", false);
             }
         }
 
@@ -190,39 +168,31 @@ namespace CalculatorApp
         {
             string inputText = CalculatorGUI.mainDisplay.Text;
 
-            //Try and add the current value in the display to the memory
             try
             {
-                //Remove any equals signs from previous calculations, as it should be able to add previously calculated values to memory
-                if (inputText.Contains('=') == true)
-                {
-                    inputText = inputText.Remove(0, 2) + null; //remove '= ' 
-                }
-
-                double valueToSubtract = Convert.ToDouble(inputText);
-                memoryValue -= valueToSubtract; //Finally add value to memory
+                //Remove any equals signs from previous calculations
+                if (inputText.Contains('=') == true) inputText = inputText.Remove(0, 2) + null;
+                memoryValue -= Convert.ToDouble(inputText);
             }
-            catch
+
+            catch //Display an error if their input was not nothing.
             {
-                //Display an error if their input was not nothing.
-                if (inputText.Length >= 1) DisplayError("Invalid Numeric value to subtract from Memory", false);
+                if (inputText.Length >= 1) DisplayError("Invalid Input Value To Subtract From Memory", false);
             }
         }
-
+        
         public void MemoryRecall()
         {
             if (memoryValue == 0) return; //Avoid adding a zero to their input.
 
-            //Print out exponent number manually. Avoid putting 'E' into the input expression.
+            //Avoid putting 'E' into the input expression by rewriting fully
             if (memoryValue.ToString().Contains('E'))
             {
                 string[] numberParts = memoryValue.ToString().Split('E');
                 string baseNumber = numberParts[0];
+
                 //remove decimal point if applicable
-                if (baseNumber.Contains('.'))
-                {
-                    baseNumber = baseNumber.Remove(baseNumber.IndexOf('.'), 1) + "";
-                }
+                if (baseNumber.Contains('.')) baseNumber = baseNumber.Remove(baseNumber.IndexOf('.'), 1) + "";
 
                 int exponent = Convert.ToInt32(numberParts[1]);
 
@@ -231,7 +201,7 @@ namespace CalculatorApp
                 if (exponent < 0) //Negative exponents have n-1 zeroes to the right of the decimal point before base num 
                 {
                     //Give the start of the number the correct sign.
-                    if (Convert.ToInt16(baseNumber) < 0)
+                    if (Convert.ToInt32(baseNumber) < 0)
                     {
                         fullNumber = "-0.";
                         baseNumber = baseNumber.Remove(0, 1) + "";
@@ -240,7 +210,7 @@ namespace CalculatorApp
                     
                     //Add in the zeroes
                     for (int j = 1; j < exponent * -1; j++) { fullNumber += "0"; }
-                    fullNumber += baseNumber;
+                    fullNumber += baseNumber; //Add in the original base num to the right
                 }
 
                 else //positive exponents have n zeroes to the right. 
@@ -253,10 +223,8 @@ namespace CalculatorApp
                 return;
             }
 
-        
             CalculatorGUI.mainDisplay.Text += memoryValue.ToString();
         }
-        
         #endregion
 
         #region Routines To Obtain Workable Input 
@@ -276,7 +244,6 @@ namespace CalculatorApp
             //Check for expressions starting with '×','÷','^' as they are invalid. 
             string startSymbol = expression.ElementAt(0).ToString();
             Regex badStartingSymbols = new Regex(@"[\÷×^]");
-
             if (badStartingSymbols.Matches(startSymbol).Count >= 1)
             {
                 DisplayError("Illegal starting symbol of " + startSymbol, preEqualsPress);
@@ -286,7 +253,6 @@ namespace CalculatorApp
             //Check for expressions ending with operators (not including '.')
             string endingSymbol = expression.ElementAt(expression.Length - 1).ToString();
             Regex okEndingSymbols = new Regex(@"[0-9.]");
-
             if (okEndingSymbols.Matches(endingSymbol).Count == 0)
             {
                 DisplayError("Illegal ending symbol of " + endingSymbol, preEqualsPress);
@@ -295,7 +261,6 @@ namespace CalculatorApp
 
             //Check for possible invalid 2-symbol combinations.
             string[] invalidOperatorCombos = { "÷÷", "÷×", "÷^", "×÷", "××", "×^", "^÷", "^×", "^^", "√÷", "√×", "√^", "-÷", "-×", "-^", "+÷", "+×", "+^", "..", "0√", "1√", "2√", "3√", "4√", "5√", "6√", "7√", "8√", "9√" };
-
             foreach (string combo in invalidOperatorCombos)
             {
                 if (expression.Contains(combo))
@@ -317,11 +282,10 @@ namespace CalculatorApp
                         DisplayError("Non-real number from √", preEqualsPress);
                         return false;
                     }
-
                 }
             }
 
-            //check for numbers with two non-consecutive decimal points
+            //check for numbers with two decimal points
             string[] numbers = ObtainWorkingNumbers(expression);
             foreach (string number in numbers)
             {
@@ -343,7 +307,6 @@ namespace CalculatorApp
             //Remove empty elements of size nConsecutiveOperators - 1
             numbers = numbers.Where(z => !string.IsNullOrWhiteSpace(z)).ToArray();
 
-            
             string startingOperator = "";
             bool firstDigitDetected = false;
             int charNumber = 0;
@@ -364,8 +327,7 @@ namespace CalculatorApp
                 else
                 {
                     firstDigitDetected = true;
-                    //now add the whole first number including any legal operators to the array. 
-                    numbers[0] = startingOperator + numbers[0];
+                    numbers[0] = startingOperator + numbers[0]; //Update array
                 }
             }
 
@@ -377,19 +339,15 @@ namespace CalculatorApp
             {
                 string operatorSequence = baseOperators[operatorIndex];
 
-                //check if a sequence of 2 or more
                 if (operatorSequence.Length > 1)
                 {
-                    //Part of number is the whole sequence minus the first symbol
                     string partOfNumber = operatorSequence;
-                    partOfNumber = partOfNumber.Remove(0, 1) + "";
+                    partOfNumber = partOfNumber.Remove(0, 1) + ""; //Only the first plus or minus is the operator
 
-                    //Extract real operator and update array
                     string realOperator = operatorSequence.ElementAt(0).ToString();
-
                     baseOperators[operatorIndex] = realOperator;
 
-                    //add one to index number, because we want to skip the starting number
+                    //Skip the starting number
                     numbers[operatorIndex + 1] = partOfNumber + numbers[operatorIndex + 1];
                 }
             }
@@ -408,7 +366,6 @@ namespace CalculatorApp
             //obtaining the operator sequence
             Regex numberParts = new Regex(@"[0-9.√]");
 
-            //Search through all the number entries
             for (int numberIndex = 0; numberIndex <= numberArray.Length - 1; numberIndex++)
             {
                 string minusSequence = "";
@@ -417,14 +374,10 @@ namespace CalculatorApp
 
                 foreach (Match match in numberParts.Matches(number)) baseNumber += match;
 
-                //Search through all the parts of a number entry
+                //obtain the minuses of a number
                 foreach (char character in number)
                 {
-                    //obtain the minuses
-                    if (character == '-')
-                    {
-                        minusSequence += character;
-                    }
+                    if (character == '-') minusSequence += character;
                 }
 
                 //remove unnecessary minuses
@@ -445,6 +398,7 @@ namespace CalculatorApp
                 string number = numberArray[numberIndex];
                 if (number.Contains('√'))
                 {
+                    //Evalute root and update array
                     string decimalNumber = Convert.ToString(SquareRoot(number));
                     numberArray[numberIndex] = decimalNumber;
                 }
@@ -455,6 +409,7 @@ namespace CalculatorApp
 
         private string[] ObtainBaseOperators(string expression)
         {
+            //Split by non-operators
             string[] stringSeparators = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "."};
             string[] operators = expression.Split(stringSeparators, StringSplitOptions.None);
 
@@ -469,21 +424,14 @@ namespace CalculatorApp
 
         private string[] ObtainWorkingOperators(string expression)
         {
-            string[] stringSeparators = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "."};
-            string[] operators = expression.Split(stringSeparators, StringSplitOptions.None);
-
-            //remove first element, as it is part of the number
-            operators[0] = "";
-
-            //remove blank elements
-            operators = operators.Where(x => !string.IsNullOrWhiteSpace(x)).ToArray();
-
+            //Get the base Operators and then do some refinement
+            string[] operators = ObtainBaseOperators(expression);
+            
             //Refine operators, and remove the ones that are actually part of the number
             for (int operatorIndex = 0; operatorIndex <= (operators.Length - 1); operatorIndex++)
             {
                 string operatorSequence = operators[operatorIndex];
 
-                //check if a sequence of 2 or more
                 if (operatorSequence.Length > 1)
                 {
                     //Extract real operator and update array
@@ -543,10 +491,7 @@ namespace CalculatorApp
 
         public bool IsFull()
         {
-            if (number1.Length >= 1 && calculatorOperator.Length >= 1 && number2.Length >= 1)
-            {
-                return true;
-            }
+            if (number1.Length >= 1 && calculatorOperator.Length >= 1 && number2.Length >= 1) return true;
             else return false;
         }
 
@@ -569,7 +514,6 @@ namespace CalculatorApp
                 numberArray[n] = "";
                 numberArray[n + 1] = "";
                 operatorArray[n] = "";
-
             }
 
             else chunk.number1 = numberArray[0];
