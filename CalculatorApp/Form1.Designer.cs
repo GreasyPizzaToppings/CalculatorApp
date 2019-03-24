@@ -42,7 +42,6 @@
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Calculator";
             this.Paint += new System.Windows.Forms.PaintEventHandler(this.CalculatorGUI_Paint);
-            this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.CalculatorGUI_KeyUp);
             this.Resize += new System.EventHandler(this.CalculatorGUI_Resize);
             this.ResumeLayout(false);
 
