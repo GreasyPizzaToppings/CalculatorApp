@@ -144,7 +144,6 @@ namespace CalculatorApp
 
             Controls.Add(preCalculatedExpression);
         }
-
         public void InitialiseCalculatorButtons()
         {
             EventHandler[] eventMethodNames = { BtnClear_Click, Btn0_Click, BtnDecimalPoint_Click, BtnEquals_Click, Btn1_Click, Btn2_Click, Btn3_Click, BtnPlus_Click, Btn4_Click, Btn5_Click, Btn6_Click, BtnMinus_Click, Btn7_Click, Btn8_Click, Btn9_Click, BtnMultiply_Click, BtnSquareRoot_Click, BtnMemoryClear_Click, BtnMemoryPlus_Click, BtnDivide_Click, BtnExponent_Click, BtnMemoryRecall_Click, BtnMemoryMinus_Click, BtnBackspace_Click };
@@ -228,8 +227,12 @@ namespace CalculatorApp
         private void CalculatorGUI_Resize(object sender, EventArgs e)
         {
             //Fixed values for the size of the calculator. Stops resizing, apart from fullscreen.
-            ActiveForm.Width = 325;
-            ActiveForm.Height = 560;
+            try 
+            {
+                ActiveForm.Width = 325;
+                ActiveForm.Height = 560;
+            }
+            catch { } //Moving one window to the side and then clicking on the calculator to fill the other half of the screen will cause errors. 
         }
 
         private void CalculatorGUI_Paint(object sender, PaintEventArgs e) //Draws the border around the displays
@@ -487,6 +490,7 @@ namespace CalculatorApp
         }
         void BtnMemoryRecall_Click(object sender, EventArgs e)
         {
+            finishedCalculation = false;
             SetOperatorButtonColours(); //Reset any inverted operator buttons
             calculator.MemoryRecall();
         }
