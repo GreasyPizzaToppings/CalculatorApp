@@ -18,3 +18,13 @@ F:\3DTP\Mini Project\CalculatorApp\CalculatorApp\bin\Debug\CalculatorApp.pdb
 F:\3DTP\Mini Project\CalculatorApp\CalculatorApp\obj\Debug\CalculatorApp.CalculatorGUI.resources
 F:\3DTP\Mini Project\CalculatorApp\CalculatorApp\obj\Debug\CalculatorApp.exe
 F:\3DTP\Mini Project\CalculatorApp\CalculatorApp\obj\Debug\CalculatorApp.pdb
+D:\Videos\Documents\New folder\CalculatorApp\CalculatorApp\obj\Debug\CalculatorApp.csprojAssemblyReference.cache
+D:\Videos\Documents\New folder\CalculatorApp\CalculatorApp\obj\Debug\CalculatorApp.CalculatorGUI.resources
+D:\Videos\Documents\New folder\CalculatorApp\CalculatorApp\obj\Debug\CalculatorApp.Properties.Resources.resources
+D:\Videos\Documents\New folder\CalculatorApp\CalculatorApp\obj\Debug\CalculatorApp.csproj.GenerateResource.cache
+D:\Videos\Documents\New folder\CalculatorApp\CalculatorApp\obj\Debug\CalculatorApp.csproj.CoreCompileInputs.cache
+D:\Videos\Documents\New folder\CalculatorApp\CalculatorApp\obj\Debug\CalculatorApp.exe
+D:\Videos\Documents\New folder\CalculatorApp\CalculatorApp\obj\Debug\CalculatorApp.pdb
+D:\Videos\Documents\New folder\CalculatorApp\CalculatorApp\bin\Debug\CalculatorApp.exe.config
+D:\Videos\Documents\New folder\CalculatorApp\CalculatorApp\bin\Debug\CalculatorApp.exe
+D:\Videos\Documents\New folder\CalculatorApp\CalculatorApp\bin\Debug\CalculatorApp.pdb

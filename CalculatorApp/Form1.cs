@@ -262,8 +262,14 @@ namespace CalculatorApp
             //Try and pre-calculate their current expression, if the user were to press equals, but not after they have already pressed equals
             if (mainDisplay.Text.Contains('=') == false)
             {
+                //Only calculate if the last term in their expression was fully entered. I.e. not '4 +  ."
                 string expression = mainDisplay.Text;
-                calculator.Start(expression, true);
+                if (expression.LastIndexOf('.') == expression.Length - 1)
+                {
+                    return; //Do not calculate an incomplete expression
+
+                }
+                else calculator.Start(expression, true);
             }
         }
         #endregion
